@@ -1,0 +1,1 @@
+gin -i --buildArgs '--tags "fts5"' run main.go
