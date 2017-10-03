@@ -1,5 +1,6 @@
 import 'babel-polyfill/dist/polyfill.min.js'
 import 'plyr/dist/plyr.js'
+import './assets/js/modernizr-custom.js'
 import './assets/css/meyer-reset.min.css'
 import 'nouislider/distribute/nouislider.min.css'
 import 'intersection-observer'

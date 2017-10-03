@@ -9,18 +9,36 @@ import (
 
 // User is the user datasource skeleton
 type Song struct {
-	PrimaryID
+	Id    string         `json:"id"`
 	Title dbr.NullString `json:"title"`
 	Path  dbr.NullString `json:"path"`
 }
 
 func (song *Song) FindById(db dbr.Session) bool {
-	fmt.Println("derp")
-	var s Song
-	err := db.Select("id", "title", "path").From("users").Where("id = ?", song.PrimaryID).LoadStruct(&s)
+	fmt.Println("Looking up song " + song.Id)
+	//var s Song
+	err := db.Select("id", "title", "path").From("songs").Where("id = ?", song.Id).LoadStruct(&song)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 
-	return false
+	return true
 }
+
+// func (user *User) Authenticate(db dbr.Session) bool {
+//   var u User
+//   err := db.Select("id", "email", "password").From("users").Where("email = ?", user.Email).LoadStruct(&u)
+//   if err != nil {
+//     return false
+//   }
+
+//   //.cleartext password derp
+//   if user.Password == u.Password {
+//     return true
+//   } else {
+//     return false
+//   }
+
+//   return false
+// }
