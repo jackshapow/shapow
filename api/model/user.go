@@ -9,7 +9,7 @@ import (
 
 // User is the user datasource skeleton
 type User struct {
-	PrimaryID
+	Id       int64          `json:"id"`
 	Name     dbr.NullString `json:"name"`
 	Email    dbr.NullString `json:"email"`
 	Password dbr.NullString `json:"password"`

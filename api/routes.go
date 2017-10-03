@@ -6,13 +6,26 @@ import (
 	// "github.com/stryveapp/stryve-api/controller"
 	"encoding/json"
 	"fmt"
+	"github.com/dgraph-io/badger"
 	"github.com/labstack/echo"
 	"net/http"
 	"net/http/httputil"
+	"reflect"
 )
 
 // RegisterRoutes registers all API routes for the app
 func RegisterRoutes(e *echo.Echo) {
+	// badger
+	opt := badger.DefaultOptions
+	dir := "database/badger"
+	opt.Dir = dir
+	opt.ValueDir = dir
+	kv, _ := badger.NewKV(&opt)
+	fmt.Println("......")
+	fmt.Println(reflect.TypeOf(kv))
+	fmt.Println("......")
+
+	// sqlite
 	db, err := database.GetConnection()
 	if err != nil {
 		fmt.Println(err)
@@ -21,6 +34,7 @@ func RegisterRoutes(e *echo.Echo) {
 
 	h := &controller.Handler{
 		DB: db,
+		KV: kv,
 	}
 
 	e.POST("/", h.Home)

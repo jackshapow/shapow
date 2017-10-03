@@ -2,25 +2,30 @@ package controller
 
 import (
 	//"encoding/json"
-	//"fmt"
+	"fmt"
 	// "github.com/dgrijalva/jwt-go"
-	// "github.com/gocraft/dbr"
-	// "github.com/jackshapow/shapow/api/model"
+	//	"github.com/gocraft/dbr"
+	"github.com/jackshapow/shapow/api/model"
+	"github.com/jackshapow/shapow/api/util"
 	"github.com/labstack/echo"
 	"net/http"
-	// "reflect"
+	//"reflect"
 	// "time"
 	//"os"
+	//"strings"
 )
-
-// var data string
 
 func (h *Handler) SongInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, stubSongInfo())
 }
 
 func (h *Handler) SongPlay(c echo.Context) error {
-	filename := "/Users/jack/go/src/github.com/jackshapow/shapow/api/music/Vampire Weekend - Modern Vampires Of The City [2013] 320/Modern Vampires Of The City @ 320/03 Step.mp3"
+	song := model.Song{Id: c.Param("id")}
+	song.FindById(*h.DB)
+	filename := util.Basepath() + "/" + song.Path.String
+	fmt.Println("Playing: " + filename)
+
+	// filename := "/Users/jack/go/src/github.com/jackshapow/shapow/api/music/Vampire Weekend - Modern Vampires Of The City [2013] 320/Modern Vampires Of The City @ 320/03 Step.mp3"
 	//filename := "/Users/jack/go/src/github.com/jackshapow/shapow/api/music/test.mp3"
 	// fmt.Println("xxxxxxxxxxxxx")
 	// fmt.Println(c.Param("id"))
