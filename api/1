@@ -1,0 +1,31 @@
+ffmpeg version N-89272-g1eee394-tessus Copyright (c) 2000-2017 the FFmpeg developers
+  built with Apple LLVM version 8.0.0 (clang-800.0.42.1)
+  configuration: --cc=/usr/bin/clang --prefix=/opt/ffmpeg --extra-version=tessus --enable-avisynth --enable-fontconfig --enable-gpl --enable-libass --enable-libbluray --enable-libfreetype --enable-libgsm --enable-libmodplug --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopus --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libvidstab --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libx264 --enable-libx265 --enable-libxavs --enable-libxvid --enable-libzmq --enable-libzvbi --enable-version3 --pkg-config-flags=--static --disable-ffplay
+  libavutil      56.  3.100 / 56.  3.100
+  libavcodec     58.  6.101 / 58.  6.101
+  libavformat    58.  2.102 / 58.  2.102
+  libavdevice    58.  0.100 / 58.  0.100
+  libavfilter     7.  5.100 /  7.  5.100
+  libswscale      5.  0.101 /  5.  0.101
+  libswresample   3.  0.101 /  3.  0.101
+  libpostproc    55.  0.100 / 55.  0.100
+[mp3 @ 0x7ffc7b800800] Estimating duration from bitrate, this may be inaccurate
+Input #0, mp3, from 'media/Blessings.mp3':
+  Metadata:
+    album_artist    : Chance The Rapper
+    composer        : Byron Cage, Chance The Rapper, Fred Hammond, Jamila Woods, JP Floyd, Nate Fox, Nico Segal & Peter Cottontale
+    lyrics-eng      : www.rgf.is
+    album           : Coloring Book
+    title           : Blessings
+    artist          : Chance The Rapper
+    genre           : Hip Hop/Rap
+    disc            : 1/1
+    track           : 5/14
+    comment         : www.rgf.is
+    date            : 2016
+  Duration: 00:03:41.99, start: 0.000000, bitrate: 322 kb/s
+    Stream #0:0: Audio: mp3, 44100 Hz, stereo, s16p, 320 kb/s
+    Stream #0:1: Video: mjpeg, yuvj420p(pc, bt470bg/unknown/unknown), 600x600 [SAR 72:72 DAR 1:1], 90k tbr, 90k tbn, 90k tbc
+    Metadata:
+      comment         : Cover (front)
+At least one output file must be specified

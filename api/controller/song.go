@@ -11,18 +11,81 @@ import (
 	"net/http"
 	//"reflect"
 	// "time"
-	//"os"
+	"io"
+	"os"
+	//"strconv"
 	//"strings"
+	"path/filepath"
+	//"time"
 )
+
+func (h *Handler) SongUpload(c echo.Context) error {
+	// Read form fields
+	//name := c.FormValue("name")
+	//email := c.FormValue("email")
+
+	//------------
+	// Read files
+	//------------
+
+	// Multipart form
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+	files := form.File["file"]
+
+	for _, file := range files {
+		// artificial delay time.Sleep(1000 * time.Millisecond)
+		// Source
+		src, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer src.Close()
+
+		// Destination
+		full_path := filepath.Join(".", "media", file.Filename)
+		os.MkdirAll(filepath.Dir(full_path), os.ModePerm)
+		dst, err := os.Create(full_path)
+		if err != nil {
+			return err
+		}
+		defer dst.Close()
+
+		// Copy
+		if _, err = io.Copy(dst, src); err != nil {
+			return err
+		}
+
+		// fmt.Println("----------")
+		// fmt.Println(reflect.TypeOf(dst))
+		// fmt.Println("----------")
+
+		// Process
+		// files.Process(pathname)
+		file := model.File{Path: full_path}
+		file.Import(*h.DB)
+
+	}
+
+	//	return c.HTML(http.StatusOK, fmt.Sprintf("<p>Uploaded successfully %d files with fields name=%s and email=%s.</p>", len(files), name, email))
+
+	return c.JSON(http.StatusOK, "")
+}
 
 func (h *Handler) SongInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, stubSongInfo())
 }
 
 func (h *Handler) SongPlay(c echo.Context) error {
-	song := model.Song{Id: c.Param("id")}
-	song.FindById(*h.DB)
-	filename := util.Basepath() + "/" + song.Path.String
+	//idInt64, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	file := model.File{Id: c.Param("id")}
+	err := file.FindById(*h.DB)
+	if err != nil {
+		fmt.Println("oh shit couldnt find it")
+	}
+	filename := util.Basepath() + "/" + file.Path
 	fmt.Println("Playing: " + filename)
 
 	// filename := "/Users/jack/go/src/github.com/jackshapow/shapow/api/music/Vampire Weekend - Modern Vampires Of The City [2013] 320/Modern Vampires Of The City @ 320/03 Step.mp3"

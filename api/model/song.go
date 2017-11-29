@@ -2,26 +2,27 @@ package model
 
 import (
 	"fmt"
-	"github.com/gocraft/dbr"
+	//"github.com/gocraft/dbr"
 	// "golang.org/x/crypto/bcrypt"
 	// "reflect"
+	"github.com/dgraph-io/badger"
 )
 
 // User is the user datasource skeleton
 type Song struct {
-	Id    string         `json:"id"`
-	Title dbr.NullString `json:"title"`
-	Path  dbr.NullString `json:"path"`
+	Id    string `json:"id"`
+	Title string `json:"title"`
+	Path  string `json:"path"`
 }
 
-func (song *Song) FindById(db dbr.Session) bool {
+func (song *Song) FindById(db badger.DB) bool {
 	fmt.Println("Looking up song " + song.Id)
 	//var s Song
-	err := db.Select("id", "title", "path").From("songs").Where("id = ?", song.Id).LoadStruct(&song)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
+	// err := db.Select("id", "title", "path").From("songs").Where("id = ?", song.Id).LoadStruct(&song)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return false
+	// }
 
 	return true
 }

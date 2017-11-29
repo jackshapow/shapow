@@ -1,4 +1,7 @@
 <template>
+
+
+
   <div class="song-list-wrap main-scroll-wrap" :class="type"
     ref="wrapper"
     tabindex="1"
@@ -33,6 +36,8 @@
         </tr>
       </thead>
     </table>
+
+
 
     <virtual-scroller
       class="scroller"

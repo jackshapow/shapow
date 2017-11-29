@@ -24,7 +24,7 @@ export default {
     },
 
     '/album/(\\d+)' (id) {
-      const album = albumStore.byId(~~id)
+      const album = albumStore.byId(id)
       if (album) {
         loadMainView('album', album)
       }
@@ -35,7 +35,7 @@ export default {
     },
 
     '/artist/(\\d+)' (id) {
-      const artist = artistStore.byId(~~id)
+      const artist = artistStore.byId(id)
       if (artist) {
         loadMainView('artist', artist)
       }
@@ -50,6 +50,10 @@ export default {
       if (playlist) {
         loadMainView('playlist', playlist)
       }
+    },
+
+    '/uploads' () {
+      loadMainView('uploads')
     },
 
     '/settings' () {

@@ -4,7 +4,7 @@ import artist from './artist'
 export default {
   album,
   artist,
-  id: null,
+  id: "",
   album_id: 0,
   title: '',
   length: 0,
