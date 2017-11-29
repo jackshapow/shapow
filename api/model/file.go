@@ -286,9 +286,12 @@ func (file *File) SetDuration() error {
 	hours, _ := strconv.Atoi(result_slice[0:2])
 	minutes, _ := strconv.Atoi(result_slice[3:5])
 	seconds, _ := strconv.Atoi(result_slice[6:8])
-	//subsec, _ := strconv.Atoi(result_slice[9:11])
+	subsec, _ := strconv.Atoi(result_slice[9:11])
 
 	total_seconds := (hours * 60 * 60) + (minutes * 60) + seconds
+	if subsec > 50 {
+		total_seconds = total_seconds + 1
+	}
 	if total_seconds > 0 {
 		file.Length = uint32(total_seconds)
 	}
