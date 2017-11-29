@@ -1,0 +1,41 @@
+// https://github.com/gogo/protobuf
+// protoc --gofast_out=. *.proto
+syntax = 'proto3';
+
+package model;
+
+enum PlaylistType {
+  Artist = 0;
+  Album = 1;
+};
+
+message Playlist {
+   string id = 1;
+   string name = 2;
+   PlaylistType type = 3;
+   string parent_id = 4;
+   string image_id = 5;
+   string cover = 6;
+   bool is_compilation = 7;
+   string created_at = 8;
+
+   // string path = 3;
+   // map<string, string> meta = 6;
+   // string email = 3;
+   // string password = 4;
+   // bytes pub_key = 5;
+   // bytes priv_key = 6;   
+  // repeated Employee Employees = 2;
+  // required CompanyType Type = 3;
+  // optional group Address = 4 {
+  //   required string Country = 5;
+  //   required string City = 6;
+  //   optional string Street = 7;
+  // }
+}
+
+
+// message Employee {
+//   required string Name = 1;
+//   optional string SSN = 2;
+// }

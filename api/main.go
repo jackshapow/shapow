@@ -2,34 +2,54 @@ package main
 
 import (
 	"fmt"
-	"github.com/jackshapow/shapow/api/database"
+	// "github.com/jackshapow/shapow/api/database"
 	"github.com/labstack/echo"
 	middleware "github.com/labstack/echo/middleware"
 	// "github.com/dgrijalva/jwt-go"
-	"github.com/gocraft/dbr"
-	"github.com/jackshapow/shapow/api/model"
+	// "github.com/gocraft/dbr"
+	//"github.com/jackshapow/shapow/api/model"
+	//"github.com/dgraph-io/badger"
 	// "time"
-	"github.com/dgraph-io/badger"
+	"encoding/binary"
+	"os"
+	"path/filepath"
+	"strconv"
 )
 
 func init() {
-	db, err := database.GetConnection()
-	if err != nil {
-		panic(err)
-	}
+	// badger
+	// opt := badger.DefaultOptions
+	// opt.Dir = "database/badger"
+	// opt.ValueDir = "database/badger"
+	// KV, _ = badger.NewKV(&opt)
 
-	u := model.User{Name: dbr.NewNullString("Bobby Jenkins"), Email: dbr.NewNullString("bjenkins@gmail.comz"), Password: dbr.NewNullString("passwordhere")}
-	_, err = db.InsertInto("users").Columns("name", "email", "password").Record(&u).Exec()
+	// opt.NumLevelZeroTables = 0
+	// opt.ValueLogFileSize = 10000000
+	// opt.ValueGCRunInterval = time.Second * 20
+	//	defer KV.Close()
 
-	if err != nil {
-		//panic(err)
-	}
+	// sqlite
+	// db, err := database.GetConnection()
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// u := model.User{Name: dbr.NewNullString("Bobby Jenkins"), Email: dbr.NewNullString("bjenkins@gmail.comz"), Password: dbr.NewNullString("passwordhere")}
+	// _, err = db.InsertInto("users").Columns("name", "email", "password").Record(&u).Exec()
+
+	// if err != nil {
+	// 	//panic(err)
+	// }
+
+	// initialize media folder
+	newpath := filepath.Join(".", "media")
+	os.MkdirAll(newpath, os.ModePerm)
 
 }
 
 func main() {
 	e := echo.New()
-	e.Use(middleware.Logger())
+	//	e.Use(middleware.Logger())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `{"time":"${time_rfc3339_nano}","id":"${id}","remote_ip":"${remote_ip}","host":"${host}",` +
 			`"method":"${method}","uri":"${uri}","status":${status}, "latency":${latency},` +
@@ -38,7 +58,12 @@ func main() {
 	}))
 
 	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		fmt.Println(string(reqBody))
+		//fmt.Println(string(reqBody))
+		if binary.Size(reqBody) > 1000 {
+			fmt.Println("Body request is", strconv.Itoa(binary.Size(reqBody)), "bytes")
+		} else {
+			fmt.Println(string(reqBody))
+		}
 	}))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -50,65 +75,66 @@ func main() {
 
 	RegisterRoutes(e)
 
-	//testBadger()
+	//test()
 
 	e.Logger.Fatal(e.Start(":3001"))
 }
 
-func testBadger() {
-	fmt.Println("Testing Badger----------------")
-	opt := badger.DefaultOptions
-	dir := "database/badger"
-	opt.Dir = dir
-	opt.ValueDir = dir
-	kv, _ := badger.NewKV(&opt)
+func testBadgerz() {
+	// fmt.Println("Testing Badger----------------")
+	// opt := badger.DefaultOptions
+	// //dir, _ := ioutil.TempDir("", "badger")
+	// dir := "database/badger"
+	// opt.Dir = dir
+	// opt.ValueDir = dir
+	// kv, _ := badger.NewKV(&opt)
 
-	key := []byte("hello")
+	// key := []byte("hello")
 
-	kv.Set(key, []byte("world"), 0x00)
-	fmt.Printf("SET %s world\n", key)
+	// kv.Set(key, []byte("world"), 0x00)
+	// fmt.Printf("SET %s world\n", key)
 
-	var item badger.KVItem
-	if err := kv.Get(key, &item); err != nil {
-		fmt.Printf("Error while getting key: %q", key)
-		return
-	}
-	var val []byte
-	err := item.Value(func(v []byte) error {
-		val = make([]byte, len(v))
-		copy(val, v)
-		return nil
-	})
-	if err != nil {
-		fmt.Printf("Error while getting value for key: %q", key)
-		return
-	}
+	// var item badger.KVItem
+	// if err := kv.Get(key, &item); err != nil {
+	// 	fmt.Printf("Error while getting key: %q", key)
+	// 	return
+	// }
+	// var val []byte
+	// err := item.Value(func(v []byte) error {
+	// 	val = make([]byte, len(v))
+	// 	copy(val, v)
+	// 	return nil
+	// })
+	// if err != nil {
+	// 	fmt.Printf("Error while getting value for key: %q", key)
+	// 	return
+	// }
 
-	fmt.Printf("GET %s %s\n", key, val)
+	// fmt.Printf("GET %s %s\n", key, val)
 
-	if err := kv.CompareAndSet(key, []byte("venus"), 100); err != nil {
-		fmt.Println("CAS counter mismatch")
-	} else {
-		if err = kv.Get(key, &item); err != nil {
-			fmt.Printf("Error while getting key: %q", key)
-		}
+	// if err := kv.CompareAndSet(key, []byte("venus"), 100); err != nil {
+	// 	fmt.Println("CAS counter mismatch")
+	// } else {
+	// 	if err = kv.Get(key, &item); err != nil {
+	// 		fmt.Printf("Error while getting key: %q", key)
+	// 	}
 
-		err := item.Value(func(v []byte) error {
-			val = make([]byte, len(v))
-			copy(val, v)
-			return nil
-		})
+	// 	err := item.Value(func(v []byte) error {
+	// 		val = make([]byte, len(v))
+	// 		copy(val, v)
+	// 		return nil
+	// 	})
 
-		if err != nil {
-			fmt.Printf("Error while getting value for key: %q", key)
-			return
-		}
+	// 	if err != nil {
+	// 		fmt.Printf("Error while getting value for key: %q", key)
+	// 		return
+	// 	}
 
-		fmt.Printf("Set to %s\n", val)
-	}
-	if err := kv.CompareAndSet(key, []byte("mars"), item.Counter()); err == nil {
-		fmt.Println("Set to mars")
-	} else {
-		fmt.Printf("Unsuccessful write. Got error: %v\n", err)
-	}
+	// 	fmt.Printf("Set to %s\n", val)
+	// }
+	// if err := kv.CompareAndSet(key, []byte("mars"), item.Counter()); err == nil {
+	// 	fmt.Println("Set to mars")
+	// } else {
+	// 	fmt.Printf("Unsuccessful write. Got error: %v\n", err)
+	// }
 }

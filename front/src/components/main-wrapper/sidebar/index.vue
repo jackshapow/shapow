@@ -37,6 +37,9 @@
 
       <ul class="menu">
         <li>
+          <a :class="['uploads', currentView == 'uploads' ? 'active' : '']" href="/#!/uploads">Uploads</a>
+        </li>
+        <li>
           <a :class="['settings', currentView == 'settings' ? 'active' : '']" href="/#!/settings">Settings</a>
         </li>
         <li>
@@ -245,6 +248,10 @@ export default {
 
       &.settings::before {
         content: "\f013";
+      }
+
+      &.uploads::before {
+        content: "\f093";
       }
 
       &.users::before {

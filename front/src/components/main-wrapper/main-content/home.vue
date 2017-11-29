@@ -5,7 +5,9 @@
     </h1>
 
     <div class="main-scroll-wrap" @scroll="scrolling" ref="wrapper">
+
       <div class="two-cols">
+
         <section v-show="top.songs.length">
           <h1>Most Played</h1>
 
@@ -115,7 +117,7 @@ export default {
         albums: [],
         songs: []
       },
-
+      files: [],
       preferences: preferenceStore.state
     }
   },
@@ -206,6 +208,7 @@ export default {
       font-weight: $fontWeight_UltraThin;
     }
   }
+
 
   @media only screen and (max-width: 768px) {
     .two-cols {

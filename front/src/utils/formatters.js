@@ -47,3 +47,10 @@ export function parseValidationError (error) {
 export function br2nl (str) {
   return str.replace(/<br\s*[\/]?>/gi, '\n')
 }
+
+export function capitalize (value) {
+  if (!value) return ''
+  value = value.toString()
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+

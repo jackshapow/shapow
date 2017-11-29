@@ -3,8 +3,8 @@ import artist from './artist'
 
 export default {
   artist,
-  id: 0,
-  artist_id: 0,
+  id: "",
+  artist_id: "",
   name: '',
   cover: config.unknownCover,
   playCount: 0,

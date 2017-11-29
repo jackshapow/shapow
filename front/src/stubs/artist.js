@@ -1,5 +1,5 @@
 export default {
-  id: 0,
+  id: "",
   name: '',
   image: null,
   playCount: 0,

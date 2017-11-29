@@ -2,68 +2,100 @@ package model
 
 import (
 	"fmt"
-	"github.com/gocraft/dbr"
 	// "golang.org/x/crypto/bcrypt"
-	// "reflect"
+	"crypto/rand"
+	"errors"
+	"github.com/btcsuite/btcutil/base58"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/dgraph-io/badger"
+	"github.com/golang/protobuf/proto"
+	"golang.org/x/crypto/ed25519"
+	//	"reflect"
+	"strings"
 )
 
-// User is the user datasource skeleton
-type User struct {
-	Id       int64          `json:"id"`
-	Name     dbr.NullString `json:"name"`
-	Email    dbr.NullString `json:"email"`
-	Password dbr.NullString `json:"password"`
+func (user *User) SetKeypair() bool {
+	if user.Id == "" {
+		pubkey, privkey, _ := ed25519.GenerateKey(rand.Reader)
+		user.Id = base58.CheckEncode(pubkey, 0)
+		user.PubKey = pubkey
+		user.PrivKey = privkey
+	}
+	return true
 }
 
-func (user *User) Create(db dbr.Session) bool {
-	fmt.Println(user)
-	// user.Name = dbr.NewNullString("zzzzzzzzzz")
-	// user.Email = dbr.NewNullString("zzzz@zzzzz.com")
-	// user.Password = dbr.NewNullString("zzzpass")
+func (user *User) Create(db badger.DB) bool {
 
-	// u := User{Name: dbr.NewNullString("Bobby Jenkins"), Email: dbr.NewNullString("bjenkindds@gmail.comz"), Password: dbr.NewNullString("passwordhere")}
+	user.SetKeypair()
 
-	_, err := db.InsertInto("users").Columns("name", "email", "password").Record(user).Exec()
+	data, err := proto.Marshal(user)
 
 	if err != nil {
 		return false
 	}
 
-	// //_, err = db.InsertInto("users").Columns("name", "email", "password").Record(&u).Exec()
-	// fmt.Println("----------------------")
-	// fmt.Println(user)
-	// //fmt.Println(u)
-	// fmt.Println("----------------------")
-	// fmt.Println(a)
-	// fmt.Println(err)
-	// //a.Build(dbr.InsertBuilder, buf)
-	// fmt.Println(reflect.TypeOf(a))
+	err = db.Update(func(txn *badger.Txn) error {
+		// check for existing account
+		_, err := txn.Get([]byte("ue:" + strings.ToLower(user.Email)))
+		if err == nil {
+			return errors.New("That email already exists.")
+		}
 
-	// fmt.Println("----------------------")
-	// //b := a.InsertStmt
+		err = txn.Set([]byte("u:"+user.Id), data)
+		err = txn.Set([]byte("ue:"+strings.ToLower(user.Email)), []byte(user.Id))
+		return err
+	})
 
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return false
-	// }
+	if err != nil {
+		fmt.Println("-Error saving badger-------")
+		fmt.Println(err)
+		return false
+	}
+
+	fmt.Println("---------------------------")
+	spew.Dump(user)
+	fmt.Println("---------------------------")
 
 	return true
 }
 
-func (user *User) Authenticate(db dbr.Session) bool {
-	var u User
-	err := db.Select("id", "email", "password").From("users").Where("email = ?", user.Email).LoadStruct(&u)
+func (user *User) Authenticate(db badger.DB) bool {
+	password := user.Password
+
+	err := db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte("ue:" + strings.ToLower(user.Email)))
+		if err != nil {
+			return errors.New("That email address doesn't exist.")
+		}
+
+		id, err := item.Value()
+		val, err := txn.Get(append([]byte("u:"), id...))
+
+		if err != nil {
+			return errors.New("Cannot load account.")
+		}
+
+		data, err := val.Value()
+
+		err = proto.Unmarshal(data, user)
+		if err != nil {
+			return errors.New("Cannot load account.")
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		return false
+		return false //,errors.New("Cannot load account.")
 	}
 
-	//.cleartext password derp
-	if user.Password == u.Password {
+	if password == user.Password {
 		return true
 	} else {
 		return false
 	}
 
+	// return false
 	return false
 }
 
