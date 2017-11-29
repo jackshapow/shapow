@@ -10,8 +10,10 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-.DS_Store
+*.DS_Store
 
-/api/media
-/api/music
-/api/database/badger
+media/
+music/
+database/badger/
+
+*.log
