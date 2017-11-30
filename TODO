@@ -1,0 +1,36 @@
+TODO:
+
+- remove files that are not actually songs
+  - skip processing?
+  - skip artwork processing?
+- what happens if you run ffmpeg parser on non-osx machine?
+
+- files
+  - track numbers
+  - log play count
+
+- playlist
+  - show length
+  - other variables?
+  - create new playlist
+  - drag and drop add to platlist
+    - add to faves
+
+- settings page ... give default location but let people set it in same place
+
+- fix avatars/gravatars
+
+
+DEPLOYMENT
+- auto-updating binary
+  - distribution server / domain?
+- auto-download ffmpeg?
+- support for osx/win/linux... taskbar chrome? install process?
+
+
+
+
+
+DONT DO THIS BEFORE CHRISTMAS
+- riot/bleeve
+- 
