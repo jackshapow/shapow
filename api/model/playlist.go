@@ -7,9 +7,155 @@ import (
 	//"github.com/davecgh/go-spew/spew"
 	"github.com/dgraph-io/badger"
 	"github.com/golang/protobuf/proto"
-	//"reflect"
+	"reflect"
 	//"strings"
+	"encoding/json"
+	"math/rand"
+	//"strconv"
+	"github.com/imdario/mergo"
 )
+
+func (p Playlist) MarshalJSON() ([]byte, error) {
+	type JsonPlaylist Playlist
+
+	aux := struct {
+		JsonPlaylist
+		ParentId string `json:"artist_id"`
+		//Files    []*File `json:"songs"`
+		Songs []string `json:"songs"`
+	}{
+		JsonPlaylist: JsonPlaylist(p),
+		ParentId:     p.ParentId,
+	}
+
+	if len(aux.Songs) == 0 { // if we dont do this then vue dies when it gets songs:null and not songs:[]
+		aux.Songs = []string{}
+	}
+
+	for _, file := range aux.Files {
+		aux.Songs = append(aux.Songs, file.Id)
+	}
+
+	return json.Marshal(aux)
+}
+
+// Keep this around for later use?
+// func (u *MyUser) UnmarshalJSON(data []byte) error {
+// 	type Alias MyUser
+// 	aux := &struct {
+// 		LastSeen int64 `json:"lastSeen"`
+// 		*Alias
+// 	}{
+// 		Alias: (*Alias)(u),
+// 	}
+// 	if err := json.Unmarshal(data, &aux); err != nil {
+// 		return err
+// 	}
+// 	u.LastSeen = time.Unix(aux.LastSeen, 0)
+// 	return nil
+// }
+
+// func (p Playlist) MarshalJSON() ([]byte, error) {
+// 	type JsonPlaylist Playlist
+// 	aux := struct {
+// 		//Songs int64 `json:"lastSeen"`
+// 		Cat string `json:"cats"`
+// 		*JsonPlaylist
+// 	}{
+// 		JsonPlaylist: (*JsonPlaylist)(p),
+// 	}
+// 	if err := json.Marshal(&aux); err != nil {
+// 		return err
+// 	}
+// 	p.Cat = "herpderp"
+// 	//u.LastSeen = time.Unix(aux.LastSeen, 0)
+// 	return nil
+// }
+
+func PlaylistDelete(db badger.DB, id string) error {
+
+	err := db.Update(func(txn *badger.Txn) error {
+		// grab playlist
+		q := []byte("p:" + string(PlaylistType_value["User"]) + id)
+
+		err := txn.Delete(q)
+
+		if err != nil {
+			fmt.Println("Playlist not found")
+			return errors.New("     Playlist not found")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error deleting in badger")
+	}
+
+	return nil
+}
+
+func UpdatePlaylistSongs(db badger.DB, id string, song_ids []string) error {
+	// fmt.Println("id:", id)
+	// fmt.Println("song_ids:", song_ids)
+	var playlistFiles = make([]*File, len(song_ids))
+
+	err := db.Update(func(txn *badger.Txn) error {
+		// grab playlist
+		q := []byte("p:" + string(PlaylistType_value["User"]) + id)
+
+		item, err := txn.Get(q)
+		// fmt.Println("ref", reflect.TypeOf(PlaylistType_value["User"]))
+		// fmt.Println("1>", string(PlaylistType_User), ":", id)
+		if err != nil {
+			//fmt.Println(err)
+			//spew.Dump(reflect.TypeOf(p))
+			fmt.Println("playlist not found")
+			return errors.New("     Playlist not found")
+		}
+
+		data, err := item.Value()
+
+		if err != nil {
+			fmt.Println("couldnt decode value")
+		}
+
+		playlist := &Playlist{}
+		//		err = proto.Unmarshal(data, playlist)
+
+		if err := proto.Unmarshal(data, playlist); err != nil {
+			fmt.Println("fuckzzzz")
+			return errors.New("     Unmarshalling error")
+		}
+
+		for i, song_id := range song_ids {
+			playlistFiles[i] = &File{Id: song_id, Track: uint32(i)} //i
+		}
+		//playlist.Files
+		playlist.Files = playlistFiles
+		fmt.Println("DO IT SON", playlist)
+		fmt.Println("DO IT SON", reflect.TypeOf(playlist))
+		data, err = proto.Marshal(playlist)
+
+		if err != nil {
+			fmt.Println("Error marshalling proto")
+		}
+
+		err = txn.Set(q, data)
+
+		if err != nil {
+			fmt.Println("Error setting new value")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error saving to badger")
+	}
+
+	return nil
+}
 
 func AllPlaylists(db badger.DB, playlistType PlaylistType) ([]Playlist, error) {
 	playlistSlice := make([]Playlist, 0)
@@ -63,11 +209,73 @@ func AllPlaylists(db badger.DB, playlistType PlaylistType) ([]Playlist, error) {
 	return playlistSlice, nil
 }
 
+func (playlist *Playlist) Update(db badger.DB) error {
+	var newPlaylist = playlist
+
+	err := db.Update(func(txn *badger.Txn) error {
+		// grab playlist
+		q := []byte("p:" + string(PlaylistType_value["User"]) + newPlaylist.Id)
+
+		item, err := txn.Get(q)
+
+		if err != nil {
+			fmt.Println("Playlist not found")
+			return errors.New("     Playlist not found")
+		}
+
+		data, err := item.Value()
+
+		if err != nil {
+			return errors.New("     Could not decode playlist")
+		}
+
+		playlist := &Playlist{}
+
+		if err := proto.Unmarshal(data, playlist); err != nil {
+			return errors.New("     Unmarshalling error")
+		}
+
+		if err := mergo.Merge(newPlaylist, playlist); err != nil {
+			fmt.Println("Error merging values", err)
+		}
+
+		data, err = proto.Marshal(newPlaylist)
+
+		if err != nil {
+			fmt.Println("Error marshalling proto")
+			return err
+		}
+
+		err = txn.Set(q, data)
+
+		if err != nil {
+			fmt.Println("Error setting new value")
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error saving to badger")
+		return err
+	}
+
+	return nil
+
+}
+
 func (playlist *Playlist) Create(db badger.DB) error {
+
 	if playlist.Cover == "" {
 		playlist.Cover = "public/img/covers/unknown.jpg"
 	}
 
+	if playlist.Id == "" {
+		//playlist.Id = "11032090402961465666"
+		playlist.Id = fmt.Sprint(rand.Uint32())
+		fmt.Println("IDDDDDDD:", playlist.Id)
+	}
 	data, err := proto.Marshal(playlist)
 
 	if err != nil {

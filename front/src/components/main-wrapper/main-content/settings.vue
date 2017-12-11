@@ -8,9 +8,7 @@
       <div class="form-row">
         <label for="inputSettingsPath">Media Path</label>
         <p class="help">
-          The <em>absolute</em> path to the server directory containing your media.
-          Koel will scan this directory for songs and extract any available information.<br>
-          Scanning may take a while, especially if you have a lot of songs, so be patient.
+          The <em>relative</em> path to the directory containing your media.
         </p>
 
         <input type="text" v-model="state.settings.media_path" id="inputSettingsPath">

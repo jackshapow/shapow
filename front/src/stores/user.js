@@ -92,9 +92,9 @@ export const userStore = {
       user = this.current
     }
 
-    // FIX: temporarily disabled as it was causing app to hang in offline mode
-    // Vue.set(user, 'avatar', `https://www.gravatar.com/avatar/${md5(user.email)}?s=256`)
-    // Vue.set(user, 'avatar', ``)
+    // FIX: temporarily disabled gravatar as it was causing app to hang in offline mode
+    //Vue.set(user, 'avatar', `https://www.gravatar.com/avatar/${md5(user.email)}?s=256&d=robohash`)
+    Vue.set(user, 'avatar', `/public/img/user.png`)
   },
 
   /**

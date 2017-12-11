@@ -16,8 +16,10 @@ message File {
    string path = 3;
    string album_id = 4;
    string artist_id = 5;
-   uint32 length = 6;
-   map<string, string> meta = 7;
+   string mime = 6;
+   uint32 track = 7;
+   uint32 length = 8;
+   map<string, string> meta = 9;
    // string email = 3;
    // string password = 4;
    // bytes pub_key = 5;

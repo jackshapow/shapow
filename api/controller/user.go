@@ -24,7 +24,7 @@ func (h *Handler) UserCreate(c echo.Context) error {
 
 	fmt.Println("Creating user...")
 
-	if u.Create(*h.DB) {
+	if err := u.Create(*h.DB); err != nil {
 		// Create token
 		token := jwt.New(jwt.SigningMethodHS256)
 
@@ -63,6 +63,7 @@ func (h *Handler) UserLogin(c echo.Context) error {
 
 		// Set claims
 		claims := token.Claims.(jwt.MapClaims)
+		claims["id"] = u.Id
 		claims["name"] = u.Name
 		claims["admin"] = true
 		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
@@ -79,6 +80,40 @@ func (h *Handler) UserLogin(c echo.Context) error {
 
 	//	return echo.ErrUnauthorized
 	return echo.NewHTTPError(http.StatusUnauthorized, "Please provide valid credentials")
+}
+
+func (h *Handler) UserUpdate(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		userJwt := c.Get("user").(*jwt.Token)
+		claims := userJwt.Claims.(jwt.MapClaims)
+		id = claims["id"].(string)
+	}
+
+	u := model.User{Id: id}
+
+	if err := c.Bind(&u); err != nil {
+		return echo.NewHTTPError(http.StatusConflict, "Sorry couldn't bind user value.")
+	}
+
+	fmt.Println("Update user...", u)
+	err := u.Update(*h.DB)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusConflict, "Sorry couldn't update user.")
+	}
+
+	return c.JSON(http.StatusOK, make(map[string]string, 0))
+}
+
+func (h *Handler) UserDelete(c echo.Context) error {
+
+	err := model.UserDelete(*h.DB, c.Param("id"))
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusConflict, "Sorry couldn't delete user.")
+	}
+
+	return c.JSON(http.StatusOK, make(map[string]string, 0))
 }
 
 func accessible(c echo.Context) error {
@@ -110,127 +145,94 @@ func (h *Handler) UserDataTest(c echo.Context) error {
 // }
 
 func (h *Handler) UserData(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
+	userJwt := c.Get("user").(*jwt.Token)
+	claims := userJwt.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+	//id := "123"
+	fmt.Println("CLAIMS", claims)
+	fmt.Println("ID", id)
 
-	return c.String(http.StatusOK, stubData(h, name))
+	user := model.User{Id: id}
+	err := user.FindById(*h.DB)
+	if err != nil {
+		fmt.Println("Couldn't load current user", err)
+	}
+
+	fmt.Println("USER", user)
+
+	return c.String(http.StatusOK, stubData(h, user))
 }
 
-func stubData(h *Handler, name string) string {
+func stubData(h *Handler, user model.User) string {
+	// Songs/files
 	all_files, err := model.AllFiles(*h.DB)
 	if err != nil {
 		fmt.Println("Error fetching all files")
 	}
 	songArray, _ := json.Marshal(all_files)
 
+	// Albums
 	all_albums, err := model.AllPlaylists(*h.DB, model.PlaylistType_Album)
 	if err != nil {
 		fmt.Println("Error fetching all albums")
 	}
-
 	albumArray, _ := json.Marshal(all_albums)
 
+	// Artists
 	all_artists, err := model.AllPlaylists(*h.DB, model.PlaylistType_Artist)
 	if err != nil {
 		fmt.Println("Error fetching all artists")
 	}
-
 	artistArray, _ := json.Marshal(all_artists)
 
-	// fmt.Println(".........")
-	// fmt.Println(reflect.TypeOf(songArray))
-	// fmt.Println(".........")
-	// fmt.Println(songArray)
-	// fmt.Println(".........")
-	// fmt.Println(string(songArray))
-	// fmt.Println(".........")
+	// Playlists
+	all_playlists, err := model.AllPlaylists(*h.DB, model.PlaylistType_User)
+	if err != nil {
+		fmt.Println("Error fetching all playlists")
+	}
 
-	// "artists": [
-	//     {
-	//         "id": "11032090402961465788",
-	//         "name": "STATIC Chance the Rapper Artist",
-	//         "image": "http://koel.app/public/img/covers/599cb7202544d1.46641926.jpeg"
-	//     }
-	// ],
+	playlistArray, _ := json.Marshal(all_playlists)
 
-	// {
-	//     "id": "3352024042766435742",
-	//     "artist_id": "11032090402961465788",
-	//     "name": "STATIC: Coloring Book Album",
-	//     "cover": "http://koel.app/public/img/covers/599cb7202544d1.46641926.jpeg",
-	//     "created_at": "2017-08-22 22:58:40",
-	//     "is_compilation": true
-	// }
+	// Interactions
+	all_interactions, err := model.AllInteractions(*h.DB, all_files)
+	if err != nil {
+		fmt.Println("Error fetching all interactions")
+	}
+
+	interactionArray, _ := json.Marshal(all_interactions)
+
+	// Users
+	all_users, err := model.AllUsers(*h.DB)
+	if err != nil {
+		fmt.Println("Error fetching all users")
+	}
+
+	userArray, _ := json.Marshal(all_users)
 
 	return `{
     "albums": ` + string(albumArray) + `,
     "artists": ` + string(artistArray) + `,
     "songs": ` + string(songArray) + `,
     "settings": {
-        "media_path": "/home/vagrant/Code/koel/music"
+        "media_path": "media"
     },
-    "playlists": [],
-    "interactions": [
-        {
-            "song_id": "1a0746a20d7e06393bc91d584616dd15",
-            "liked": false,
-            "play_count": 1
-        }
-    ],
-    "users": [
-        {
-            "id": 1,
-            "name": "herp derp",
-            "email": "herp@derp.com",
-            "is_admin": true,
-            "preferences": []
-        }
-    ],
+    "playlists": ` + string(playlistArray) + `,
+    "interactions": ` + string(interactionArray) + `,
+    "users": ` + string(userArray) + `,
     "currentUser": {
-        "id": 1,
-        "name": "` + name + `",
-        "email": "",
+        "id": "` + user.Id + `",
+        "name": "` + user.Name + `",
+        "email": "` + user.Email + `",
         "is_admin": true,
         "preferences": []
     },
     "useLastfm": false,
     "useYouTube": false,
     "useiTunes": true,
-    "allowDownload": true,
+    "allowDownload": false,
     "supportsTranscoding": false,
     "cdnUrl": "http://localhost:3000/",
-    "currentVersion": "v3.6.2",
-    "latestVersion": "v3.6.2"
+    "currentVersion": "v0.1",
+    "latestVersion": "v0.1"
 }`
 }
-
-// `[
-//         {
-//             "id": "1806358967a29fe64b6822fafdd72e5f",
-//             "album_id": 3,
-//             "artist_id": 4,
-//             "title": "A L I E N S",
-//             "length": 282.5,
-//             "track": 3,
-//             "created_at": "2017-08-22 22:58:40"
-//         },
-//         {
-//             "id": "19bfa1969dab011d47b447e12b17f63a",
-//             "album_id": 2,
-//             "artist_id": 3,
-//             "title": "Ya Hey",
-//             "length": 312.69,
-//             "track": 10,
-//             "created_at": "2017-08-22 22:53:21"
-//         },
-//         {
-//             "id": "1a0746a20d7e06393bc91d584616dd15",
-//             "album_id": 3,
-//             "artist_id": 4,
-//             "title": "All I Can Think About Is You",
-//             "length": 274.66,
-//             "track": 1,
-//             "created_at": "2017-08-22 22:58:40"
-//         }
-//     ]`

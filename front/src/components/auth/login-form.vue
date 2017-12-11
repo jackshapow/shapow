@@ -32,8 +32,8 @@ export default {
   data () {
     return {
       name: '',
-      email: '',
-      password: '',
+      email: 'demo@demo.com',
+      password: 'demo',
       failed: false,
       showLogin: true
     }

@@ -1,12 +1,14 @@
 package model
 
 import (
+	"encoding/binary"
+	//"encoding/json"
 	"fmt"
 	// "golang.org/x/crypto/bcrypt"
 	// "crypto/rand"
 	// "errors"
 	// "github.com/btcsuite/btcutil/base58"
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"github.com/dgraph-io/badger"
 	"github.com/golang/protobuf/proto"
 	// "golang.org/x/crypto/ed25519"
@@ -17,6 +19,7 @@ import (
 	"github.com/OneOfOne/xxhash"
 	"github.com/dhowden/tag"
 	//"github.com/hajimehoshi/go-mp3"
+	"gopkg.in/h2non/filetype.v1"
 	"io"
 	"io/ioutil"
 	"os"
@@ -26,6 +29,12 @@ import (
 	"strconv"
 	"strings"
 )
+
+type Interaction struct {
+	SongId    string `json:"song_id"`
+	Liked     bool   `json:"liked"`
+	PlayCount uint32 `json:"play_count"`
+}
 
 func RescanFolder(db badger.DB) error {
 
@@ -51,6 +60,44 @@ func RescanFolder(db badger.DB) error {
 
 }
 
+func AllInteractions(db badger.DB, files []File) ([]Interaction, error) {
+	var interactions []Interaction
+
+	for _, file := range files {
+		interaction := Interaction{file.Id, false, 0}
+
+		err := db.View(func(txn *badger.Txn) error {
+			// PLAY COUNT
+			item, err := txn.Get([]byte("fi:play:" + interaction.SongId))
+			var iBytes = make([]byte, 4)
+
+			if err == nil {
+				iBytes, err = item.Value()
+				binary.LittleEndian.PutUint32(iBytes, interaction.PlayCount)
+			}
+
+			// LIKE
+			_, err = txn.Get([]byte("fi:like:" + interaction.SongId))
+			if err != nil {
+				interaction.Liked = false
+			} else {
+				interaction.Liked = true
+			}
+
+			return nil
+		})
+
+		//fmt.Println("::::", interaction)
+
+		if err == nil {
+			interactions = append(interactions, interaction)
+		}
+
+	}
+
+	return interactions, nil
+}
+
 func AllFiles(db badger.DB) ([]File, error) {
 	fileSlice := make([]File, 0)
 
@@ -68,7 +115,11 @@ func AllFiles(db badger.DB) ([]File, error) {
 				fmt.Println("unmarshaling error: ", err)
 			}
 
-			fileSlice = append(fileSlice, *newFile)
+			//fmt.Println(newFile)
+			// Only show audio files
+			if strings.HasPrefix(newFile.Mime, "audio/") {
+				fileSlice = append(fileSlice, *newFile)
+			}
 
 			if err != nil {
 				return err
@@ -208,6 +259,24 @@ func (file *File) SetAlbumArtist(db badger.DB) bool {
 	return true
 }
 
+func (file *File) SetMime() error {
+	buf, _ := ioutil.ReadFile(file.Path)
+
+	kind, unknown := filetype.Match(buf)
+	if unknown != nil {
+		return unknown
+	}
+
+	if kind.Extension == "unknown" {
+		return errors.New("Unknown File Extension")
+	}
+
+	//fmt.Println("Nice", ":", kind.Extension, ":")
+
+	file.Mime = kind.MIME.Value
+	return nil
+}
+
 func (file *File) ParseID3(db badger.DB) error {
 	f, err := os.Open(file.Path)
 	m, err := tag.ReadFrom(f)
@@ -250,15 +319,15 @@ func (file *File) ParseID3(db badger.DB) error {
 		//spew.Dump(m.Picture())
 		newFile := File{Path: picture_path, Title: m.Picture().Type}
 		newFile.Import(db)
-		fmt.Println("     NEW COVER:")
-		spew.Dump(newFile)
+
 		file.Meta["image_id"] = newFile.Id
 		file.Meta["cover"] = strings.Replace(newFile.Path, "media/", "api/", 1)
 		//public/img/covers/unknown-album.png
 		//file.
 	}
 	file.Meta["Lyrics"] = m.Lyrics()
-	//file.Meta["Format"] = m.Raw()
+	track, _ := m.Track()
+	file.Track = uint32(track)
 
 	return nil
 }
@@ -296,21 +365,86 @@ func (file *File) SetDuration() error {
 	if total_seconds > 0 {
 		file.Length = uint32(total_seconds)
 	}
-	// fmt.Println(result_slice)
-	// fmt.Println(total_seconds)
-	// fmt.Println(hours)
-	// fmt.Println(minutes)
-	// fmt.Println(seconds)
-	//fmt.Println(subsec)
 
-	// fmt.Println("LENGTH: ", strconv.FormatInt(d.Length(), 10))
-	//return strconv.FormatUint(d.Length(), 10)
 	return nil
 }
 
-func (file *File) Import(db badger.DB) bool {
+func SetInteraction(db badger.DB, id string, kind string) (Interaction, error) {
+	interaction := Interaction{id, false, 0}
+	err := db.Update(func(txn *badger.Txn) error {
+		// PLAY COUNT
+		item, err := txn.Get([]byte("fi:play:" + id))
+		var iBytes = make([]byte, 4)
+
+		if err != nil { // Set default
+			interaction.PlayCount = 1
+			binary.LittleEndian.PutUint32(iBytes, interaction.PlayCount)
+		} else { // Increment
+			iBytes, err = item.Value()
+			if err != nil {
+			}
+			interaction.PlayCount = binary.LittleEndian.Uint32(iBytes) + 1
+			binary.LittleEndian.PutUint32(iBytes, interaction.PlayCount)
+		}
+
+		if kind == "play" {
+			err = txn.Set([]byte("fi:play:"+id), iBytes)
+
+			if err != nil {
+				fmt.Println("Saving play failed.")
+				return err
+			} else {
+				fmt.Println("Saving play success!")
+			}
+		}
+
+		// LIKE
+		_, err = txn.Get([]byte("fi:like:" + id))
+		if err != nil {
+			interaction.Liked = false
+		} else {
+			interaction.Liked = true
+		}
+
+		if kind == "like" {
+			if interaction.Liked == false {
+				// Like it
+				zbytes := make([]byte, 0) //{0}
+				err = txn.Set([]byte("fi:like:"+id), zbytes)
+				if err == nil {
+					interaction.Liked = true
+				}
+			} else {
+				// Unlike it
+				err = txn.Delete([]byte("fi:like:" + id))
+				if err == nil {
+					interaction.Liked = false
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error saving badger transaction", err)
+	}
+
+	//val, err := json.Marshal(interaction)
+
+	//fmt.Println("NEW VALUE:", string(val))
+
+	return interaction, err
+}
+
+func (file *File) Import(db badger.DB) error {
 	// grab meta data
 	// import into list / search index
+	err := file.SetMime()
+	if err != nil {
+		fmt.Println("     File type not recognized.")
+		return err
+	}
 	file.SetId()
 	file.ParseID3(db)
 	file.SetName()
@@ -325,7 +459,7 @@ func (file *File) Import(db badger.DB) bool {
 	data, err := proto.Marshal(file)
 
 	if err != nil {
-		return false
+		return err
 	}
 
 	err = db.Update(func(txn *badger.Txn) error {
@@ -338,12 +472,12 @@ func (file *File) Import(db badger.DB) bool {
 
 	if err != nil {
 		fmt.Println("ERROR: ", err)
-		return false
+		return err
 	}
 
 	// fmt.Println("---------------------------")
 	// spew.Dump(file)
 	// fmt.Println("---------------------------")
 
-	return true
+	return nil
 }

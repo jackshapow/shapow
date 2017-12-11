@@ -46,7 +46,7 @@ export default {
     },
 
     '/playlist/(\\d+)' (id) {
-      const playlist = playlistStore.byId(~~id)
+      const playlist = playlistStore.byId(id)
       if (playlist) {
         loadMainView('playlist', playlist)
       }

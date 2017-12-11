@@ -7,47 +7,143 @@ import (
 	middleware "github.com/labstack/echo/middleware"
 	// "github.com/dgrijalva/jwt-go"
 	// "github.com/gocraft/dbr"
-	//"github.com/jackshapow/shapow/api/model"
-	//"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger"
+	"github.com/golang/protobuf/proto"
+	"github.com/jackshapow/shapow/api/model"
 	// "time"
 	"encoding/binary"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/getlantern/systray"
+	"github.com/getlantern/systray/example/icon"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func init() {
-	// badger
-	// opt := badger.DefaultOptions
-	// opt.Dir = "database/badger"
-	// opt.ValueDir = "database/badger"
-	// KV, _ = badger.NewKV(&opt)
-
-	// opt.NumLevelZeroTables = 0
-	// opt.ValueLogFileSize = 10000000
-	// opt.ValueGCRunInterval = time.Second * 20
-	//	defer KV.Close()
-
-	// sqlite
-	// db, err := database.GetConnection()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// u := model.User{Name: dbr.NewNullString("Bobby Jenkins"), Email: dbr.NewNullString("bjenkins@gmail.comz"), Password: dbr.NewNullString("passwordhere")}
-	// _, err = db.InsertInto("users").Columns("name", "email", "password").Record(&u).Exec()
-
-	// if err != nil {
-	// 	//panic(err)
-	// }
-
-	// initialize media folder
-	newpath := filepath.Join(".", "media")
-	os.MkdirAll(newpath, os.ModePerm)
-
 }
 
+var (
+	NodeSettings model.Node
+)
+
 func main() {
+	// systray
+	onExit := func() {
+		fmt.Println("Finished onExit")
+	}
+	fmt.Println("here we go...")
+	systray.Run(onReady, onExit)
+	fmt.Println("xhere we go..")
+}
+
+func onReady() {
+	fmt.Println("herrpppperrrr")
+	systray.SetIcon(icon.Data)
+	//systray.SetTitle("Awesome App")
+	systray.SetTooltip("Lantern")
+	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
+	go func() {
+		<-mQuitOrig.ClickedCh
+		fmt.Println("Requesting quit")
+		systray.Quit()
+		fmt.Println("Finished quitting")
+	}()
+
+	// We can manipulate the systray in other goroutines
+	go func() {
+		systray.SetIcon(icon.Data)
+		//		systray.SetTitle("Awesome App")
+		systray.SetTooltip("Pretty awesome棒棒嗒")
+		mChange := systray.AddMenuItem("Change Me", "Change Me")
+		mChecked := systray.AddMenuItem("Unchecked", "Check Me")
+		mEnabled := systray.AddMenuItem("Enabled", "Enabled")
+		systray.AddMenuItem("Ignored", "Ignored")
+		mUrl := systray.AddMenuItem("Open Lantern.org", "my home")
+		mQuit := systray.AddMenuItem("退出", "Quit the whole app")
+		systray.AddSeparator()
+		mToggle := systray.AddMenuItem("Toggle", "Toggle the Quit button")
+		shown := true
+		for {
+			select {
+			case <-mChange.ClickedCh:
+				mChange.SetTitle("I've Changed")
+			case <-mChecked.ClickedCh:
+				if mChecked.Checked() {
+					mChecked.Uncheck()
+					mChecked.SetTitle("Unchecked")
+				} else {
+					mChecked.Check()
+					mChecked.SetTitle("Checked")
+				}
+			case <-mEnabled.ClickedCh:
+				mEnabled.SetTitle("Disabled")
+				mEnabled.Disable()
+			case <-mUrl.ClickedCh:
+				open.Run("https://www.getlantern.org")
+			case <-mToggle.ClickedCh:
+				if shown {
+					mQuitOrig.Hide()
+					mEnabled.Hide()
+					shown = false
+				} else {
+					mQuitOrig.Show()
+					mEnabled.Show()
+					shown = true
+				}
+			case <-mQuit.ClickedCh:
+				systray.Quit()
+				fmt.Println("Quit2 now...")
+				return
+			}
+		}
+	}()
+
+	// Initialize badger
+	opt := badger.DefaultOptions
+	opt.Dir = "database/badger"
+	opt.ValueDir = "database/badger"
+	db, err := badger.Open(opt)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Initialize media store
+	var node_settings = new(model.Node)
+	err = db.Update(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte("node:settings"))
+		if err != nil {
+			// Initial new settings
+			node_settings.MediaPath = "media"
+			nodeProto, _ := proto.Marshal(node_settings)
+			err := txn.Set([]byte("node:settings"), nodeProto)
+			if err != nil {
+				return err
+			}
+		} else {
+			data, err := item.Value()
+			err = proto.Unmarshal(data, node_settings)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("ERROR LOADING NODE", err)
+	}
+
+	fmt.Println("GIDDYUP", node_settings)
+	newpath := filepath.Join(".", node_settings.MediaPath)
+	os.MkdirAll(newpath, os.ModePerm)
+
+	// Reset DB?
+	model.ResetDB(*db)
+
 	e := echo.New()
 	//	e.Use(middleware.Logger())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
@@ -62,7 +158,7 @@ func main() {
 		if binary.Size(reqBody) > 1000 {
 			fmt.Println("Body request is", strconv.Itoa(binary.Size(reqBody)), "bytes")
 		} else {
-			fmt.Println(string(reqBody))
+			fmt.Println("Request Body:", string(reqBody))
 		}
 	}))
 
@@ -73,68 +169,9 @@ func main() {
 
 	//e.Use(middleware.Recover())
 
-	RegisterRoutes(e)
+	RegisterRoutes(e, db, node_settings)
 
 	//test()
-
 	e.Logger.Fatal(e.Start(":3001"))
-}
 
-func testBadgerz() {
-	// fmt.Println("Testing Badger----------------")
-	// opt := badger.DefaultOptions
-	// //dir, _ := ioutil.TempDir("", "badger")
-	// dir := "database/badger"
-	// opt.Dir = dir
-	// opt.ValueDir = dir
-	// kv, _ := badger.NewKV(&opt)
-
-	// key := []byte("hello")
-
-	// kv.Set(key, []byte("world"), 0x00)
-	// fmt.Printf("SET %s world\n", key)
-
-	// var item badger.KVItem
-	// if err := kv.Get(key, &item); err != nil {
-	// 	fmt.Printf("Error while getting key: %q", key)
-	// 	return
-	// }
-	// var val []byte
-	// err := item.Value(func(v []byte) error {
-	// 	val = make([]byte, len(v))
-	// 	copy(val, v)
-	// 	return nil
-	// })
-	// if err != nil {
-	// 	fmt.Printf("Error while getting value for key: %q", key)
-	// 	return
-	// }
-
-	// fmt.Printf("GET %s %s\n", key, val)
-
-	// if err := kv.CompareAndSet(key, []byte("venus"), 100); err != nil {
-	// 	fmt.Println("CAS counter mismatch")
-	// } else {
-	// 	if err = kv.Get(key, &item); err != nil {
-	// 		fmt.Printf("Error while getting key: %q", key)
-	// 	}
-
-	// 	err := item.Value(func(v []byte) error {
-	// 		val = make([]byte, len(v))
-	// 		copy(val, v)
-	// 		return nil
-	// 	})
-
-	// 	if err != nil {
-	// 		fmt.Printf("Error while getting value for key: %q", key)
-	// 		return
-	// 	}
-
-	// 	fmt.Printf("Set to %s\n", val)
-	// }
-	// if err := kv.CompareAndSet(key, []byte("mars"), item.Counter()); err == nil {
-	// 	fmt.Println("Set to mars")
-	// } else {
-	// 	fmt.Printf("Unsuccessful write. Got error: %v\n", err)
-	// }
 }

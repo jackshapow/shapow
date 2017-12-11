@@ -48,19 +48,23 @@
         <div class="form-row">
           <label>
             <input type="checkbox" name="confirmClosing" v-model="prefs.confirmClosing" @change="savePreference">
-            Confirm before closing Koel
+            Confirm before closing
           </label>
         </div>
+        <!--
         <div class="form-row">
           <label>
             <input type="checkbox" name="transcodeOnMobile" v-model="prefs.transcodeOnMobile" @change="savePreference">
             Convert and play media at 128kbps on mobile
           </label>
         </div>
+        -->
       </div>
 
       <section class="lastfm" >
+        <!--
         <h1>Last.fm Integration</h1>
+        -->
 
         <div v-if="sharedState.useLastfm">
           <p>This installation of Koel integrates with Last.fm.
@@ -96,6 +100,7 @@
         </div>
 
         <div v-else>
+          <!--
           <p>This installation of Koel has no Last.fm integration.
             <span v-if="state.current.is_admin">Visit
               <a href="https://koel.phanan.net/docs/#/3rd-party?id=last-fm" target="_blank">Koel’s Wiki</a>
@@ -103,6 +108,7 @@
             </span>
             <span v-else>Try politely asking your administrator to enable it.</span>
           </p>
+        -->
         </div>
       </section>
     </div>

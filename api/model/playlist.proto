@@ -1,12 +1,16 @@
 // https://github.com/gogo/protobuf
 // protoc --gofast_out=. *.proto
+// protoc --proto_path=. --gofast_out=. file.proto playlist.proto  // must path both files because of import
 syntax = 'proto3';
+
+import "file.proto";
 
 package model;
 
 enum PlaylistType {
   Artist = 0;
   Album = 1;
+  User = 2;
 };
 
 message Playlist {
@@ -18,6 +22,7 @@ message Playlist {
    string cover = 6;
    bool is_compilation = 7;
    string created_at = 8;
+   repeated File Files = 9;
 
    // string path = 3;
    // map<string, string> meta = 6;
@@ -34,8 +39,3 @@ message Playlist {
   // }
 }
 
-
-// message Employee {
-//   required string Name = 1;
-//   optional string SSN = 2;
-// }

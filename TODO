@@ -1,36 +1,120 @@
+15 DAYS
+
 TODO:
-
-- remove files that are not actually songs
-  - skip processing?
-  - skip artwork processing?
-- what happens if you run ffmpeg parser on non-osx machine?
-
-- files
-  - track numbers
-  - log play count
-
-- playlist
-  - show length
-  - other variables?
-  - create new playlist
-  - drag and drop add to platlist
-    - add to faves
-
+- new user from users page submits new token and logs ppl out
 - settings page ... give default location but let people set it in same place
+  - if you can't get media paths working easily just disable
+  - On every OS just use ~/AVA
+- change logo / set name
+- systray (make icons)
+- build pipeline
+  - platform target for systray and ffmpeg?
+  - tag releases on git
+  - build js pipeline
+  - pack assets into golang
+  - build for each os?
+    - linux
+    - osx
+    - win
+  - create OS packages
+  - put binary releases
+- command line flags?
+- test on windows/ubuntu/clean osx
+- build/packaging/installers for windows/osx?
+- add licensing info
 
-- fix avatars/gravatars
+NICE TO HAVE:
+- update/push into vue song array after upload.. generalized websocket?
+
+- collections/library
+  - on sync upload an array of file and playlist protobufs to meetava.ai
+  - on search hit grpc service http://meetava.co/Search
+  - if you hit "Download"
+    - copy protobuf to local collection
+    - add to download queue
+    - server provides array of IP addresses that have that file? stun?
+  - use stun to facilitate transfers?
+
+  - every node should be registered as online/offline
+  - needs to have history of STUN success
+
+  - have a separate badger DB for collections? or just a key-prefix?
+
+- deploy server meetava.com
+  - auto-update binary from URL
+  - STUN/(disable TURN if it gets too busy?)
+
+
+
+STRETCH GOALS:
+  - Divide up content based on logged in user
+  - Setup central server getinka.com
+  - Push all node file data to getinka.com/files grpc
+    - Have server be notified when online? Hold open an https connection.
+    - Have to have active https pipe to be considered online
+  - Create new tab "Collections (beta)"
+    - have it ajax with JWT into getinka.com endpoint
+    - return list of all matching "files" ... use JWT/grpc for all intra server communication
+    - include ip address/zero tier address in the index
+      - it just grpc's into that node and say "play"
+      - cross site so you can stream right from that node to your local browser
+      - how about nodes that are behind firewalls?
+
+
+Inka
+TreasureIsland
 
 
 DEPLOYMENT
+- what happens if you run ffmpeg parser on non-osx machine?
 - auto-updating binary
   - distribution server / domain?
 - auto-download ffmpeg?
 - support for osx/win/linux... taskbar chrome? install process?
 
 
-
-
-
 DONT DO THIS BEFORE CHRISTMAS
 - riot/bleeve
-- 
+
+
+
+DO IT... SOMETIME
+- delayed import M3U to grab missing track lengths, artist, and album... position/track number?
+- Use the audio checksum feature of dhowden/tag to ignore ID3 tags...
+
+
+
+- on local installs be able to right-click a file and "Show in Finder/Explorer"
+  - then use syscall to open the local file/folder ~/AVA/JohnDoe/
+
+
+
+
+https://github.com/kardianos/service
+https://github.com/mh-cbon/go-msi
+https://github.com/murlokswarm/macpack
+https://github.com/decred/decred-release
+
+https://github.com/sanbornm/go-selfupdate
+https://github.com/jpillora/overseer
+https://github.com/getlantern/autoupdate
+
+
+- use a standard ~/AVA folder 
+  - but also index the standard itunes/music/etc folders from each OS in read only mode
+
+
+
+
+
+altitude
+reflect
+lumen
+refuge
+haven
+ark
+hype
+alter
+mod
+frequnecy
+amplify

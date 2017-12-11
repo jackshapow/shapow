@@ -11,6 +11,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/crypto/ed25519"
 	//	"reflect"
+	"github.com/imdario/mergo"
 	"strings"
 )
 
@@ -24,14 +25,42 @@ func (user *User) SetKeypair() bool {
 	return true
 }
 
-func (user *User) Create(db badger.DB) bool {
+func (user *User) FindById(db badger.DB) error {
+	fmt.Println("Looking up user " + user.Id)
+
+	err := db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte("u:" + user.Id))
+
+		if err != nil {
+			return errors.New("That user id doesnt exist")
+		}
+
+		data, err := item.Value()
+
+		err = proto.Unmarshal(data, user)
+		if err != nil {
+			return errors.New("Cannot unpack protobuf.")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Can't get user", err)
+		return err
+	}
+
+	return nil
+}
+
+func (user *User) Create(db badger.DB) error {
 
 	user.SetKeypair()
 
 	data, err := proto.Marshal(user)
 
 	if err != nil {
-		return false
+		return err
 	}
 
 	err = db.Update(func(txn *badger.Txn) error {
@@ -49,14 +78,45 @@ func (user *User) Create(db badger.DB) bool {
 	if err != nil {
 		fmt.Println("-Error saving badger-------")
 		fmt.Println(err)
-		return false
+		return err
 	}
 
 	fmt.Println("---------------------------")
 	spew.Dump(user)
 	fmt.Println("---------------------------")
 
-	return true
+	return nil
+}
+
+func AllUsers(db badger.DB) ([]User, error) {
+	userSlice := make([]User, 0)
+
+	db.Update(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		it := txn.NewIterator(opts)
+		prefix := []byte("u:")
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			v, err := item.Value()
+
+			newUser := &User{}
+			err = proto.Unmarshal(v, newUser)
+			if err != nil {
+				fmt.Println("unmarshaling error: ", err)
+			}
+
+			userSlice = append(userSlice, *newUser)
+
+			if err != nil {
+				return err
+			}
+			// fmt.Printf("key=%s, value=%s\n", k, v)
+
+		}
+		return nil
+	})
+
+	return userSlice, nil
 }
 
 func (user *User) Authenticate(db badger.DB) bool {
@@ -97,6 +157,86 @@ func (user *User) Authenticate(db badger.DB) bool {
 
 	// return false
 	return false
+}
+
+func (user *User) Update(db badger.DB) error {
+	var newUser = user
+
+	err := db.Update(func(txn *badger.Txn) error {
+		q := []byte("u:" + newUser.Id)
+
+		item, err := txn.Get(q)
+
+		if err != nil {
+			fmt.Println("User not found")
+			return errors.New("     User not found")
+		}
+
+		data, err := item.Value()
+
+		if err != nil {
+			return errors.New("     Could not decode user")
+		}
+
+		user := &User{}
+
+		if err := proto.Unmarshal(data, user); err != nil {
+			return errors.New("     Unmarshalling error")
+		}
+
+		if err := mergo.Merge(newUser, user); err != nil {
+			fmt.Println("Error merging values", err)
+		}
+
+		data, err = proto.Marshal(newUser)
+
+		if err != nil {
+			fmt.Println("Error marshalling proto")
+			return err
+		}
+
+		err = txn.Set(q, data)
+
+		if err != nil {
+			fmt.Println("Error setting new value")
+			return err
+		}
+
+		err = txn.Set([]byte("ue:"+strings.ToLower(newUser.Email)), []byte(newUser.Id))
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error saving to badger")
+		return err
+	}
+
+	return nil
+
+}
+
+func UserDelete(db badger.DB, id string) error {
+
+	err := db.Update(func(txn *badger.Txn) error {
+		// grab playlist
+		q := []byte("u:" + id)
+
+		err := txn.Delete(q)
+
+		if err != nil {
+			fmt.Println("User not found")
+			return errors.New("     User not found")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error deleting in badger")
+	}
+
+	return nil
 }
 
 // func (user *User) Save(db *pg.DB) {

@@ -19,6 +19,16 @@ import (
 	//"time"
 )
 
+func (h *Handler) SongInteraction(c echo.Context) error {
+	type Payload struct{ Song string }
+	var pLoad Payload
+	c.Bind(&pLoad)
+
+	interaction, _ := model.SetInteraction(*h.DB, pLoad.Song, c.Param("kind")) //, ) // "play" or "favorite"
+
+	return c.JSON(http.StatusOK, interaction)
+}
+
 func (h *Handler) SongUpload(c echo.Context) error {
 	// Read form fields
 	//name := c.FormValue("name")
@@ -44,6 +54,7 @@ func (h *Handler) SongUpload(c echo.Context) error {
 		}
 		defer src.Close()
 
+		fmt.Println("OK", h.NodeSettings.MediaPath)
 		// Destination
 		full_path := filepath.Join(".", "media", file.Filename)
 		os.MkdirAll(filepath.Dir(full_path), os.ModePerm)

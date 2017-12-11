@@ -13,67 +13,45 @@ import (
 	"net/http"
 	"net/http/httputil"
 	// "reflect"
-	"log"
+	//"log"
 )
 
 // RegisterRoutes registers all API routes for the app
-func RegisterRoutes(e *echo.Echo) {
-	// badger
-	// opt := badger.DefaultOptions
-	// dir := "database/badger"
-	// opt.Dir = dir
-	// opt.ValueDir = dir
-	// kv, _ := badger.NewKV(&opt)
-	// fmt.Println("......")
-	// fmt.Println(reflect.TypeOf(kv))
-	// fmt.Println("......")
-
-	// initialize badger
-	opt := badger.DefaultOptions
-	opt.Dir = "database/badger"
-	opt.ValueDir = "database/badger"
-	db, err := badger.Open(opt)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Reset DB?
-	model.ResetDB(*db)
-
-	//db.Close()
-	//	defer db.Close()
-
-	// sqlite
-	// db, err := database.GetConnection()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// // env := &Env{db: db}
-
+func RegisterRoutes(e *echo.Echo, db *badger.DB, node_settings *model.Node) {
 	h := &controller.Handler{
-		DB: db,
-		//KV: kv,
+		DB:           db,
+		NodeSettings: node_settings,
 	}
+
+	r := e.Group("")
+	r.Use(middleware.JWT([]byte("secret")))
 
 	e.POST("/", h.Home)
-	e.Use(middleware.Static("media"))
+	e.Use(middleware.Static(NodeSettings.MediaPath))
 
 	e.POST("/me", h.UserLogin)
 	e.DELETE("/me", h.UserLogout)
+	r.PUT("/me", h.UserUpdate)
 
 	e.GET("/datatest", h.UserDataTest)
 
-	//e.GET("/data", h.UserData)
-
-	r := e.Group("/data")
-	r.Use(middleware.JWT([]byte("secret")))
-	r.GET("", h.UserData)
+	r.GET("/data", h.UserData)
 
 	e.POST("/songs", h.SongUpload)
+
+	e.POST("/interaction/:kind", h.SongInteraction)
+
+	e.POST("/playlist", h.PlaylistCreate)
+	e.DELETE("/playlist/:id", h.PlaylistDelete)
+	e.PUT("/playlist/:id", h.PlaylistUpdate)
+	e.PUT("/playlist/:id/sync", h.PlaylistSync)
+
 	e.GET("/songs/:id/info", h.SongInfo)
 	e.GET("/songs/:id/play", h.SongPlay)
 
 	e.POST("/user", h.UserCreate)
+	e.DELETE("/user/:id", h.UserDelete)
+	r.PUT("/user/:id", h.UserUpdate)
 
 	e.POST("/zme", func(c echo.Context) error {
 		decoder := json.NewDecoder(c.Request().Body)
