@@ -94,11 +94,13 @@ DO IT... SOMETIME
 https://github.com/kardianos/service
 https://github.com/mh-cbon/go-msi
 https://github.com/murlokswarm/macpack
+https://github.com/Xeoncross/macappshell
 https://github.com/decred/decred-release
 
 https://github.com/sanbornm/go-selfupdate
 https://github.com/jpillora/overseer
 https://github.com/getlantern/autoupdate
+https://github.com/mitchellh/go-homedir
 
 https://github.com/keroserene/go-webrtc
 https://github.com/pixelbender/go-stun
@@ -117,16 +119,6 @@ branding
 https://www.youtube.com/watch?v=HG8tqEUTlvs
 
 
-
-inka
-
-ark
-vessel
-yacht
-yat
-lifeboat
-
-
 optimize for:
 SPEED
   - cut yourself out.. u cant be bottleneck
@@ -137,8 +129,17 @@ TRUST
   - give ppl keys to castle
 SCALABILITY
   - 
+=======
+https://cdn0.iconfinder.com/data/icons/developer-line-2/512/sharpness-512.png
+https://www.iconfinder.com/icons/220712/clean_clear_diamond_diamonds_gem_hard_hardness_opacity_precious_pyramid_sharp_sharpness_transparent_icon
 
 
+inka
+ark
+vessel
+yacht
+yat
+lifeboat
 altitude
 reflect
 lumen
@@ -151,15 +152,88 @@ alter
 mod
 melody
 amplify
+<<<<<<< HEAD
 be.chancetherapper.com
 rise
 flavor
 underground.chancetherapper.com
 alpha
 ark
+=======
+magnify
+
+mixtape
+
+mixtape.im
+mixtape.is
+mixtape.la
+mixtape.to
+
+mx
+
+jacks.mixtape.is/chano
+
+
+getmixtape / for chano
+
+put the code under a github. don't have ANY commentary tied to code ownership
+
+make advertising site disconnected
+
+"Hey, I made a promotional website. Check it: http://mixtape"
+
+enjoy.chancetherapper.com
+into.chancetherapper.com
+bonfire.chancetherapper.com
+
+
+bonfire.is
+
+bonfire.club
+
+Preach.ChanceTheRapper.com
+
+
+
+- don't overthink the name
+- just make it easy to change by keeping name in one location
+  - github acct
+  - domain
+  - logo
+
+
+- auto-join most popular library (survey 8-10 nodes)
+
+
+EVERYTHING IS FEEDS
+- artists feed keypair
+- mix.society
+  - mix.meta
+
+
+GLOBAL SEARCH
+- use autocomplete for items in local library
+- global search on enter
+
+
+
+
+BONFIRE
+MIXTAPE
+BLAZE
 
 
 
 
 
+
+>>>>>>> 8592b15d663cff90393c2553126b43ecbdb12048
+
+
+
+
+
+<<<<<<< HEAD
 50k -- good worker fund
+=======
+>>>>>>> 8592b15d663cff90393c2553126b43ecbdb12048
