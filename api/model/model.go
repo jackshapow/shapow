@@ -19,36 +19,37 @@ func ResetDB(db badger.DB) error {
 	db.Update(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 
-		// it := txn.NewIterator(opts)
-		// prefix := []byte("f:")
-		// for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-		// 	item := it.Item()
-		// 	k := item.Key()
-		// 	fmt.Println("DELETE F ", k)
-		// 	txn.Delete(k)
+		it := txn.NewIterator(opts)
+		prefix := []byte("f:")
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			fmt.Println("DELETE F ", k)
+			txn.Delete(k)
 
-		// }
+		}
 
-		// nit := txn.NewIterator(opts)
-		// prefix = []byte("p:")
-		// for nit.Seek(prefix); nit.ValidForPrefix(prefix); nit.Next() {
-		// 	item := nit.Item()
-		// 	k := item.Key()
-		// 	fmt.Println("DELETE P ", k)
-		// 	txn.Delete(k)
+		nit := txn.NewIterator(opts)
+		prefix = []byte("p:")
+		for nit.Seek(prefix); nit.ValidForPrefix(prefix); nit.Next() {
+			item := nit.Item()
+			k := item.Key()
+			fmt.Println("DELETE P ", k)
+			txn.Delete(k)
 
-		// }
+		}
 
-		// zit := txn.NewIterator(opts)
-		// prefix := []byte("fi:")
-		// for zit.Seek(prefix); zit.ValidForPrefix(prefix); zit.Next() {
-		// 	item := zit.Item()
-		// 	k := item.Key()
-		// 	fmt.Println("DELETE P ", k)
-		// 	txn.Delete(k)
+		zit := txn.NewIterator(opts)
+		prefix = []byte("fi:")
+		for zit.Seek(prefix); zit.ValidForPrefix(prefix); zit.Next() {
+			item := zit.Item()
+			k := item.Key()
+			fmt.Println("DELETE P ", k)
+			txn.Delete(k)
+		}
 
 		uit := txn.NewIterator(opts)
-		prefix := []byte("u:")
+		prefix = []byte("u:")
 		for uit.Seek(prefix); uit.ValidForPrefix(prefix); uit.Next() {
 			item := uit.Item()
 			k := item.Key()
@@ -79,7 +80,7 @@ func ResetDB(db badger.DB) error {
 	// }
 
 	// Load existing media
-	// RescanFolder(db)
+	RescanFolder(db)
 
 	return nil
 }

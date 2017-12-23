@@ -321,7 +321,7 @@ func (file *File) ParseID3(db badger.DB) error {
 		newFile.Import(db)
 
 		file.Meta["image_id"] = newFile.Id
-		file.Meta["cover"] = strings.Replace(newFile.Path, "media/", "api/", 1)
+		file.Meta["cover"] = strings.Replace(newFile.Path, "media/", "api/media/", 1)
 		//public/img/covers/unknown-album.png
 		//file.
 	}
