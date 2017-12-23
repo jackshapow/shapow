@@ -79,6 +79,7 @@
     <div v-else class="none">
       <p>Nothing here yet. Drag and drop some files to add them to your collection.</p>
     </div>
+
   </section>
 
 </template>

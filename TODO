@@ -1,4 +1,4 @@
-15 DAYS
+13 DAYS
 
 TODO:
 - new user from users page submits new token and logs ppl out
@@ -25,6 +25,7 @@ TODO:
 
 NICE TO HAVE:
 - update/push into vue song array after upload.. generalized websocket?
+- fix upload hover el bug
 
 - collections/library
   - on sync upload an array of file and playlist protobufs to meetava.ai
@@ -99,12 +100,43 @@ https://github.com/sanbornm/go-selfupdate
 https://github.com/jpillora/overseer
 https://github.com/getlantern/autoupdate
 
+https://github.com/keroserene/go-webrtc
+https://github.com/pixelbender/go-stun
+https://github.com/ccding/go-stun
+https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html
+https://github.com/square/certstrap
+
+https://github.com/lextoumbourou/goodhosts
+https://github.com/jaytaylor/go-hostsfile
 
 - use a standard ~/AVA folder 
   - but also index the standard itunes/music/etc folders from each OS in read only mode
 
 
+branding
+https://www.youtube.com/watch?v=HG8tqEUTlvs
 
+
+
+inka
+
+ark
+vessel
+yacht
+yat
+lifeboat
+
+
+optimize for:
+SPEED
+  - cut yourself out.. u cant be bottleneck
+  - communicate vision clearly
+  - if 3 people agree to do something they have greenlight to act on it
+TRUST
+  - have a very simple voting/funding mechanism. go ahead and put some bitcoin bounties up
+  - give ppl keys to castle
+SCALABILITY
+  - 
 
 
 altitude
@@ -114,7 +146,20 @@ refuge
 haven
 ark
 hype
+alt.
 alter
 mod
-frequnecy
+melody
 amplify
+be.chancetherapper.com
+rise
+flavor
+underground.chancetherapper.com
+alpha
+ark
+
+
+
+
+
+50k -- good worker fund
