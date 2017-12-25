@@ -12,13 +12,18 @@ import (
 	"github.com/jackshapow/shapow/api/model"
 	// "time"
 	"encoding/binary"
-	"os"
-	"path/filepath"
-	"strconv"
-
 	"github.com/getlantern/systray"
 	"github.com/getlantern/systray/example/icon"
+	"github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
+	"gopkg.in/alecthomas/kingpin.v2"
+	"os"
+	"path/filepath"
+	// "reflect"
+	// "github.com/shurcooL/vfsgen"
+	// "net/http"
+	"runtime"
+	"strconv"
 )
 
 func init() {
@@ -26,84 +31,76 @@ func init() {
 
 var (
 	NodeSettings model.Node
+	AppName      = "Bonfire"
+	DataRoot     = kingpin.Flag("data", "User data directory").ExistingDir()
 )
 
+func bootstrap() {
+	// var fs http.FileSystem = http.Dir("../front/dist")
+
+	// err := vfsgen.Generate(fs, vfsgen.Options{})
+	// if err != nil {
+	// 	fmt.Println("Error generating", err)
+	// }
+
+	kingpin.Parse()
+
+	fmt.Println("Starting", AppName, "on", runtime.GOOS, "...")
+
+	if *DataRoot != "" {
+		// Use existing data directory
+		*DataRoot, _ = filepath.Abs(*DataRoot)
+	} else {
+		// Set default data directory
+		root, _ := homedir.Dir()
+		*DataRoot = filepath.Join(root, AppName)
+		os.MkdirAll(*DataRoot, os.ModePerm)
+	}
+
+	fmt.Println("Data directory", *DataRoot)
+}
+
 func main() {
+	bootstrap()
+
 	// systray
 	onExit := func() {
-		fmt.Println("Finished onExit")
+		fmt.Println(AppName, "quit.")
 	}
-	fmt.Println("here we go...")
+
+	fmt.Println("Opening...")
 	systray.Run(onReady, onExit)
-	fmt.Println("xhere we go..")
 }
 
 func onReady() {
-	fmt.Println("herrpppperrrr")
-	systray.SetIcon(icon.Data)
-	//systray.SetTitle("Awesome App")
-	systray.SetTooltip("Lantern")
-	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
-	go func() {
-		<-mQuitOrig.ClickedCh
-		fmt.Println("Requesting quit")
-		systray.Quit()
-		fmt.Println("Finished quitting")
-	}()
 
 	// We can manipulate the systray in other goroutines
 	go func() {
 		systray.SetIcon(icon.Data)
-		//		systray.SetTitle("Awesome App")
-		//systray.SetTooltip("Pretty awesome棒棒嗒")
-		// mChange := systray.AddMenuItem("Change Me", "Change Me")
-		// mChecked := systray.AddMenuItem("Unchecked", "Check Me")
-		// mEnabled := systray.AddMenuItem("Enabled", "Enabled")
-		//systray.AddMenuItem("Ignored", "Ignored")
-		mUrl := systray.AddMenuItem("Open Shapow", "my home")
-		//mQuit := systray.AddMenuItem("退出", "Quit the whole app")
-		// systray.AddSeparator()
-		// mToggle := systray.AddMenuItem("Toggle", "Toggle the Quit button")
-		// shown := true
+		systray.SetTooltip(AppName)
+		mUrl := systray.AddMenuItem(("Open " + AppName), "My home")
+		mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
+		systray.SetIcon(icon.Data)
+
+		go func() {
+			<-mQuitOrig.ClickedCh
+			//fmt.Println("Quitting...")
+			systray.Quit()
+			//fmt.Println("Finished quitting")
+		}()
+
 		for {
 			select {
-			// case <-mChange.ClickedCh:
-			// 	mChange.SetTitle("I've Changed")
-			// case <-mChecked.ClickedCh:
-			// 	if mChecked.Checked() {
-			// 		mChecked.Uncheck()
-			// 		mChecked.SetTitle("Unchecked")
-			// 	} else {
-			// 		mChecked.Check()
-			// 		mChecked.SetTitle("Checked")
-			// 	}
-			// case <-mEnabled.ClickedCh:
-			// 	mEnabled.SetTitle("Disabled")
-			// 	mEnabled.Disable()
 			case <-mUrl.ClickedCh:
-				open.Run("http://localhost:8080")
-				// case <-mToggle.ClickedCh:
-				// 	if shown {
-				// 		mQuitOrig.Hide()
-				// 		// mEnabled.Hide()
-				// 		shown = false
-				// 	} else {
-				// 		mQuitOrig.Show()
-				// 		// mEnabled.Show()
-				// 		shown = true
-				// 	}
-				// case <-mQuit.ClickedCh:
-				// 	systray.Quit()
-				// 	fmt.Println("Quit2 now...")
-				// 	return
+				open.Run("http://localhost:31337")
 			}
 		}
 	}()
 
 	// Initialize badger
 	opt := badger.DefaultOptions
-	opt.Dir = "database/badger"
-	opt.ValueDir = "database/badger"
+	opt.Dir = filepath.Join(*DataRoot, "database")
+	opt.ValueDir = filepath.Join(*DataRoot, "database")
 	db, err := badger.Open(opt)
 
 	if err != nil {
@@ -142,7 +139,8 @@ func onReady() {
 	os.MkdirAll(newpath, os.ModePerm)
 
 	// Reset DB?
-	model.ResetDB(*db)
+	// disabled because its crashing app
+	// model.ResetDB(*db)
 
 	e := echo.New()
 	//	e.Use(middleware.Logger())
@@ -163,7 +161,7 @@ func onReady() {
 	}))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost", "http://localhost:3000", "http://localhost:8080", "http://localhost:3001", "http://koel.app"},
+		AllowOrigins: []string{"http://localhost", "http://localhost:3000", "http://localhost:8080", "http://localhost:3001", "http://localhost:31337", "http://koel.app", "http://mixtape:31337", "http://mixtape"},
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
@@ -171,7 +169,8 @@ func onReady() {
 
 	RegisterRoutes(e, db, node_settings)
 
-	//test()
-	e.Logger.Fatal(e.Start(":3001"))
+	open.Run("http://localhost:31337")
+
+	e.Logger.Fatal(e.Start(":31337"))
 
 }

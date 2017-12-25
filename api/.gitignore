@@ -15,5 +15,6 @@
 media/
 music/
 database/badger/
+data/
 
 *.log

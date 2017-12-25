@@ -20,6 +20,8 @@ fi
 
 mkdir -p "$APPNAME.app/Contents/"{MacOS,Resources}
 
+cp ../api/main "$APPNAME.app/Contents/MacOS/$APPNAME"
+
 cat > "$APPNAME.app/Contents/Info.plist" <<END
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -30,13 +32,13 @@ cat > "$APPNAME.app/Contents/Info.plist" <<END
   <key>CFBundleExecutable</key>
   <string>$APPNAME</string>
   <key>CFBundleIdentifier</key>
-  <string>com.example.www</string>
+  <string>com.avalight.mixtape</string>
   <key>CFBundleName</key>
   <string>$APPNAME</string>
   <key>CFBundleIconFile</key>
   <string>icon.icns</string>
   <key>CFBundleShortVersionString</key>
-  <string>0.01</string>
+  <string>0.02</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -47,6 +49,11 @@ cat > "$APPNAME.app/Contents/Info.plist" <<END
   <integer>1</integer>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
+    <!-- Set LSUIElement to indicate this is an agent app, meaning that it
+         does not get an icon in the dock.
+    <key>LSUIElement</key>
+    <string>1</string>
+    -->
 </dict>
 </plist>
 END

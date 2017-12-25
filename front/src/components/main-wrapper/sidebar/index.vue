@@ -53,7 +53,7 @@
       target="_blank"
       v-if="user.current.is_admin && sharedState.currentVersion < sharedState.latestVersion"
       class="new-ver">
-      Koel version {{ sharedState.latestVersion }} is available!
+      Mixtape version {{ sharedState.latestVersion }} is available!
     </a>
   </nav>
 </template>

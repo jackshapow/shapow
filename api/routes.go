@@ -5,13 +5,14 @@ import (
 	"github.com/jackshapow/shapow/api/model"
 	//"github.com/jackshapow/shapow/api/database"
 	// "github.com/stryveapp/stryve-api/controller"
-	"encoding/json"
-	"fmt"
+	//"encoding/json"
+	//"fmt"
+	//"github.com/GeertJohan/go.rice"
 	"github.com/dgraph-io/badger"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"net/http"
-	"net/http/httputil"
+	//"net/http/httputil"
 	// "reflect"
 	//"log"
 )
@@ -23,56 +24,55 @@ func RegisterRoutes(e *echo.Echo, db *badger.DB, node_settings *model.Node) {
 		NodeSettings: node_settings,
 	}
 
-	r := e.Group("")
-	r.Use(middleware.JWT([]byte("secret")))
+	// Serving static/UI assets
+	e.GET("/", echo.WrapHandler(http.FileServer(assets)))
+	e.GET("/public/*", echo.WrapHandler(http.FileServer(assets)))
 
-	e.POST("/", h.Home)
+	// Serving media assets
 	e.Use(middleware.Static(NodeSettings.MediaPath))
 
-	e.POST("/me", h.UserLogin)
-	e.DELETE("/me", h.UserLogout)
+	// Login no authentication
+	e.POST("/api/me", h.UserLogin)
+
+	// Require authentication
+	r := e.Group("/api")
+	r.Use(middleware.JWT([]byte("secret")))
 	r.PUT("/me", h.UserUpdate)
-
-	e.GET("/datatest", h.UserDataTest)
-
 	r.GET("/data", h.UserData)
-
-	e.POST("/songs", h.SongUpload)
-
-	e.POST("/interaction/:kind", h.SongInteraction)
-
-	e.POST("/playlist", h.PlaylistCreate)
-	e.DELETE("/playlist/:id", h.PlaylistDelete)
-	e.PUT("/playlist/:id", h.PlaylistUpdate)
-	e.PUT("/playlist/:id/sync", h.PlaylistSync)
-
-	e.GET("/songs/:id/info", h.SongInfo)
-	e.GET("/songs/:id/play", h.SongPlay)
-
-	e.POST("/user", h.UserCreate)
-	e.DELETE("/user/:id", h.UserDelete)
 	r.PUT("/user/:id", h.UserUpdate)
+	r.DELETE("/me", h.UserLogout)
+	r.GET("/datatest", h.UserDataTest)
+	r.POST("/songs", h.SongUpload)
+	r.POST("/interaction/:kind", h.SongInteraction)
+	r.POST("/playlist", h.PlaylistCreate)
+	r.DELETE("/playlist/:id", h.PlaylistDelete)
+	r.PUT("/playlist/:id", h.PlaylistUpdate)
+	r.PUT("/playlist/:id/sync", h.PlaylistSync)
+	r.GET("/songs/:id/info", h.SongInfo)
+	r.GET("/songs/:id/play", h.SongPlay)
+	r.POST("/user", h.UserCreate)
+	r.DELETE("/user/:id", h.UserDelete)
 
-	e.POST("/zme", func(c echo.Context) error {
-		decoder := json.NewDecoder(c.Request().Body)
-		fmt.Println(decoder)
-		fmt.Println("------------------")
-		var v interface{}
-		json.NewDecoder(c.Request().Body).Decode(&v)
-		fmt.Println(v)
-		fmt.Println("------------------")
-		return c.String(http.StatusOK, "ok then!")
-	})
+	// e.POST("/metest", func(c echo.Context) error {
+	// 	decoder := json.NewDecoder(c.Request().Body)
+	// 	fmt.Println(decoder)
+	// 	fmt.Println("------------------")
+	// 	var v interface{}
+	// 	json.NewDecoder(c.Request().Body).Decode(&v)
+	// 	fmt.Println(v)
+	// 	fmt.Println("------------------")
+	// 	return c.String(http.StatusOK, "ok then!")
+	// })
 
-	e.GET("/dumpdata", func(c echo.Context) error {
+	// e.GET("/dumpdata", func(c echo.Context) error {
 
-		requestDump, err := httputil.DumpRequest(c.Request(), true)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(string(requestDump))
+	// 	requestDump, err := httputil.DumpRequest(c.Request(), true)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// 	fmt.Println(string(requestDump))
 
-		return c.String(http.StatusOK, "ok then!")
-	})
+	// 	return c.String(http.StatusOK, "ok then!")
+	// })
 
 }
