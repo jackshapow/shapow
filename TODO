@@ -225,15 +225,29 @@ BLAZE
 
 
 
+-------------------------------
+
+Running on darwin?
+
+- agent running
+  -> open a new browser window
+  -> exit
+- agent not running
+  -> start agent
+  -> open browser window
 
 
->>>>>>> 8592b15d663cff90393c2553126b43ecbdb12048
+- launch at login - ?
+- install icon on taskbar -- osascript? check to make sure not already installed
+  - instead of running same app and detecting what if you just point it toward a little standalone open(http://) app?
+- hide from taskbar w/ plist
+
+- fix reset db issues
+- get proper logging setup
+
+- what about support files aka ffmpeg?
 
 
 
 
-
-<<<<<<< HEAD
-50k -- good worker fund
-=======
->>>>>>> 8592b15d663cff90393c2553126b43ecbdb12048
+- If file is in "Applications" folder then run it as a service
