@@ -36,12 +36,12 @@ type Interaction struct {
 	PlayCount uint32 `json:"play_count"`
 }
 
-func RescanFolder(db badger.DB) error {
-
-	searchDir := "./media"
+func RescanFolder(db badger.DB, node_settings *Node) error {
+	fmt.Println("RESCAN FOLDER", node_settings.MediaPath())
+	//searchDir := "./media"
 
 	fileList := make([]string, 0)
-	e := filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
+	e := filepath.Walk(node_settings.MediaPath(), func(path string, f os.FileInfo, err error) error {
 		fileList = append(fileList, path)
 		return err
 	})
@@ -53,7 +53,7 @@ func RescanFolder(db badger.DB) error {
 	for _, file := range fileList {
 		fmt.Println("RESCAN: ", file)
 		newFile := File{Path: file}
-		newFile.Import(db)
+		newFile.Import(db, node_settings)
 	}
 
 	return nil
@@ -240,7 +240,7 @@ func (file *File) SetAlbumArtist(db badger.DB) bool {
 
 		aah := xxhash.New64()
 		io.Copy(aah, strings.NewReader(album_hash_name))
-		file.AlbumId = strconv.FormatUint(ah.Sum64(), 10)
+		file.AlbumId = strconv.FormatUint(aah.Sum64(), 10)
 
 		album := Playlist{Id: file.AlbumId, Name: album_name, ParentId: artist.Id, Type: PlaylistType_Album, ImageId: file.Meta["image_id"], Cover: file.Meta["cover"]}
 		err := album.Create(db)
@@ -277,7 +277,7 @@ func (file *File) SetMime() error {
 	return nil
 }
 
-func (file *File) ParseID3(db badger.DB) error {
+func (file *File) ParseID3(db badger.DB, node_settings *Node) error {
 	f, err := os.Open(file.Path)
 	m, err := tag.ReadFrom(f)
 
@@ -294,6 +294,10 @@ func (file *File) ParseID3(db badger.DB) error {
 	file.Meta["Album"] = m.Album()
 	file.Meta["Artist"] = m.Artist()
 	file.Meta["AlbumArtist"] = m.AlbumArtist()
+
+	if file.Meta["AlbumArtist"] == "" && file.Meta["Artist"] != "" {
+		file.Meta["AlbumArtist"] = m.Artist()
+	}
 	file.Meta["Composer"] = m.Composer()
 	file.Meta["Genre"] = m.Genre()
 	file.Meta["Year"] = string(m.Year())
@@ -308,7 +312,8 @@ func (file *File) ParseID3(db badger.DB) error {
 	fmt.Println("     ", reflect.TypeOf(m.Picture()))
 	if m.Picture() != nil {
 		id := GenerateId(m.Picture().Data)
-		picture_path := filepath.Join(".", "media", "artwork", id+"."+strings.ToLower(m.Picture().Ext))
+		picture_filename := id + "." + strings.ToLower(m.Picture().Ext)
+		picture_path := filepath.Join(node_settings.ArtworkPath(), picture_filename)
 		os.MkdirAll(filepath.Dir(picture_path), os.ModePerm)
 
 		err := ioutil.WriteFile(picture_path, m.Picture().Data, 0644)
@@ -318,10 +323,11 @@ func (file *File) ParseID3(db badger.DB) error {
 		}
 		//spew.Dump(m.Picture())
 		newFile := File{Path: picture_path, Title: m.Picture().Type}
-		newFile.Import(db)
+		newFile.Import(db, node_settings)
 
 		file.Meta["image_id"] = newFile.Id
-		file.Meta["cover"] = strings.Replace(newFile.Path, "media/", "api/media/", 1)
+		//fmt.Print("COVER HERE:", newFile.Path)
+		file.Meta["cover"] = picture_filename //newFile.Path //strings.Replace(newFile.Path, "media/", "api/media/", 1)
 		//public/img/covers/unknown-album.png
 		//file.
 	}
@@ -345,6 +351,7 @@ func (file *File) SetDuration() error {
 
 	// Have to ignore the return code because not specifying -output in FFMPEG throws error code
 	if err != nil {
+		//fmt.Println("FUCK YEAH!")
 		//fmt.Println("FFMPEG cannot parse duration")
 		//fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
@@ -437,7 +444,7 @@ func SetInteraction(db badger.DB, id string, kind string) (Interaction, error) {
 	return interaction, err
 }
 
-func (file *File) Import(db badger.DB) error {
+func (file *File) Import(db badger.DB, node_settings *Node) error {
 	// grab meta data
 	// import into list / search index
 	err := file.SetMime()
@@ -446,7 +453,7 @@ func (file *File) Import(db badger.DB) error {
 		return err
 	}
 	file.SetId()
-	file.ParseID3(db)
+	file.ParseID3(db, node_settings)
 	file.SetName()
 	file.SetAlbumArtist(db)
 	if strings.Contains(file.Path, ".mp3") {

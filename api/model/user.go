@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"github.com/dgraph-io/badger"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/crypto/ed25519"
@@ -81,9 +81,9 @@ func (user *User) Create(db badger.DB) error {
 		return err
 	}
 
-	fmt.Println("---------------------------")
-	spew.Dump(user)
-	fmt.Println("---------------------------")
+	// fmt.Println("---------------------------")
+	// spew.Dump(user)
+	// fmt.Println("---------------------------")
 
 	return nil
 }

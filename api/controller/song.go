@@ -56,7 +56,7 @@ func (h *Handler) SongUpload(c echo.Context) error {
 
 		fmt.Println("OK", h.NodeSettings.MediaPath)
 		// Destination
-		full_path := filepath.Join(".", "media", file.Filename)
+		full_path := filepath.Join(h.NodeSettings.MediaPath(), file.Filename)
 		os.MkdirAll(filepath.Dir(full_path), os.ModePerm)
 		dst, err := os.Create(full_path)
 		if err != nil {
@@ -76,7 +76,7 @@ func (h *Handler) SongUpload(c echo.Context) error {
 		// Process
 		// files.Process(pathname)
 		file := model.File{Path: full_path}
-		file.Import(*h.DB)
+		file.Import(*h.DB, h.NodeSettings)
 
 	}
 
@@ -97,6 +97,7 @@ func (h *Handler) SongPlay(c echo.Context) error {
 		fmt.Println("oh shit couldnt find it")
 	}
 	filename := util.Basepath() + "/" + file.Path
+	filename = file.Path
 	fmt.Println("Playing: " + filename)
 
 	// filename := "/Users/jack/go/src/github.com/jackshapow/shapow/api/music/Vampire Weekend - Modern Vampires Of The City [2013] 320/Modern Vampires Of The City @ 320/03 Step.mp3"

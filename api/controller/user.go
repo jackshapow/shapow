@@ -148,17 +148,12 @@ func (h *Handler) UserData(c echo.Context) error {
 	userJwt := c.Get("user").(*jwt.Token)
 	claims := userJwt.Claims.(jwt.MapClaims)
 	id := claims["id"].(string)
-	//id := "123"
-	fmt.Println("CLAIMS", claims)
-	fmt.Println("ID", id)
 
 	user := model.User{Id: id}
 	err := user.FindById(*h.DB)
 	if err != nil {
-		fmt.Println("Couldn't load current user", err)
+		fmt.Println("Couldn't load user", err)
 	}
-
-	fmt.Println("USER", user)
 
 	return c.String(http.StatusOK, stubData(h, user))
 }
@@ -231,7 +226,7 @@ func stubData(h *Handler, user model.User) string {
     "useiTunes": true,
     "allowDownload": false,
     "supportsTranscoding": false,
-    "cdnUrl": "http://localhost:3000/",
+    "cdnUrl": "http://localhost:31337/",
     "currentVersion": "v0.1",
     "latestVersion": "v0.1"
 }`

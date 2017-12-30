@@ -24,7 +24,10 @@
   <integer>1</integer>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
-  <key>LSUIElement</key>
-  <string>1</string>
+    <!-- Set LSUIElement to indicate this is an agent app, meaning that it
+         does not get an icon in the dock.
+    <key>LSUIElement</key>
+    <string>1</string>
+    -->
 </dict>
 </plist>

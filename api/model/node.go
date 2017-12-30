@@ -9,7 +9,16 @@ import (
 	//"golang.org/x/crypto/ed25519"
 	//  "reflect"
 	//"strings"
+	"path/filepath"
 )
+
+func (node *Node) MediaPath() string {
+	return filepath.Join(node.RootPath, "Media")
+}
+
+func (node *Node) ArtworkPath() string {
+	return filepath.Join(node.RootPath, "Artwork")
+}
 
 func (node *Node) Initialize(db badger.DB) error {
 	// Initialize a node
@@ -28,7 +37,7 @@ func (node *Node) Initialize(db badger.DB) error {
 			fmt.Println("Loading existing node...", node)
 		} else if item == nil {
 			// Initialize new node
-			node.MediaPath = "mediaz"
+			// node.MediaPath = "mediaz"
 
 			fmt.Println("Setting up new node...", node)
 			data, err := proto.Marshal(node)

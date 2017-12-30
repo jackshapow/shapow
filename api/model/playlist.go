@@ -11,9 +11,18 @@ import (
 	//"strings"
 	"encoding/json"
 	"math/rand"
+	"path/filepath"
 	//"strconv"
 	"github.com/imdario/mergo"
 )
+
+func (p Playlist) CoverUrl(artwork_path string) string {
+	if p.Cover == "" {
+		return "public/img/covers/unknown.jpg"
+	} else {
+		return filepath.Join(artwork_path, p.Cover)
+	}
+}
 
 func (p Playlist) MarshalJSON() ([]byte, error) {
 	type JsonPlaylist Playlist
@@ -178,7 +187,8 @@ func AllPlaylists(db badger.DB, playlistType PlaylistType) ([]Playlist, error) {
 			// cleanup: set values for view
 			// ]newFile.AlbumId = "2"
 			// newFile.ArtistId = "110320904029614"
-			// newFile.Title = newFile.Meta["Title"]
+			//newFile.Title = newFile.Meta["Title"]
+			//newPlaylist.Cover = filepath.Join(node.ArtworkPath(), newPlaylist.Cover)
 
 			if playlistType == newPlaylist.Type {
 				playlistSlice = append(playlistSlice, *newPlaylist)
@@ -269,6 +279,8 @@ func (playlist *Playlist) Create(db badger.DB) error {
 
 	if playlist.Cover == "" {
 		playlist.Cover = "public/img/covers/unknown.jpg"
+	} else {
+		playlist.Cover = filepath.Join("/artwork/", playlist.Cover)
 	}
 
 	if playlist.Id == "" {

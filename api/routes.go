@@ -24,15 +24,31 @@ func RegisterRoutes(e *echo.Echo, db *badger.DB, node_settings *model.Node) {
 		NodeSettings: node_settings,
 	}
 
-	// Serving static/UI assets
+	// // Serving static/UI assets
 	e.GET("/", echo.WrapHandler(http.FileServer(assets)))
 	e.GET("/public/*", echo.WrapHandler(http.FileServer(assets)))
 
-	// Serving media assets
-	e.Use(middleware.Static(NodeSettings.MediaPath))
+	// // Serving media assets
+	e.Static("/media", node_settings.MediaPath())
+	e.Static("/artwork", node_settings.ArtworkPath())
+	// e.Use(middleware.Static(node_settings.MediaPath))
+
+	// e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+	// 	Root:   (node_settings.MediaPath + "/"),
+	// 	Browse: true,
+	// }))
+
+	//e.Use(middleware.Static(filepath.Join(*DataRoot, "Media")))
 
 	// Login no authentication
+	//e.Static("/api/media", node_settings.MediaPath)
+
 	e.POST("/api/me", h.UserLogin)
+	e.GET("/songs/:id/info", h.SongInfo)
+	e.GET("/songs/:id/play", h.SongPlay)
+	e.GET("/api/songs/:id/info", h.SongInfo)
+	e.GET("/api/songs/:id/play", h.SongPlay)
+	e.POST("/api/songs", h.SongUpload)
 
 	// Require authentication
 	r := e.Group("/api")
@@ -42,14 +58,11 @@ func RegisterRoutes(e *echo.Echo, db *badger.DB, node_settings *model.Node) {
 	r.PUT("/user/:id", h.UserUpdate)
 	r.DELETE("/me", h.UserLogout)
 	r.GET("/datatest", h.UserDataTest)
-	r.POST("/songs", h.SongUpload)
 	r.POST("/interaction/:kind", h.SongInteraction)
 	r.POST("/playlist", h.PlaylistCreate)
 	r.DELETE("/playlist/:id", h.PlaylistDelete)
 	r.PUT("/playlist/:id", h.PlaylistUpdate)
 	r.PUT("/playlist/:id/sync", h.PlaylistSync)
-	r.GET("/songs/:id/info", h.SongInfo)
-	r.GET("/songs/:id/play", h.SongPlay)
 	r.POST("/user", h.UserCreate)
 	r.DELETE("/user/:id", h.UserDelete)
 

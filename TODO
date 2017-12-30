@@ -1,29 +1,70 @@
-13 DAYS
+1 DAY
 
-TODO:
-- new user from users page submits new token and logs ppl out
-- settings page ... give default location but let people set it in same place
-  - if you can't get media paths working easily just disable
-  - On every OS just use ~/AVA
-- change logo / set name
-- systray (make icons)
+PRIMARY:
+- set manual flag/url for resetting database
+- fix binaries ffmpeg for osx/linux ... also dev mode
+- add osx icon w/ osagen
+  - if not dev mode launch browser on start
+- new user from users page submits new token and logs ppl out?
+- set logo / name
+- fix routes / jwt issues
 - build pipeline
-  - platform target for systray and ffmpeg?
   - tag releases on git
-  - build js pipeline
-  - pack assets into golang
-  - build for each os?
-    - linux
-    - osx
-    - win
-  - create OS packages
-  - put binary releases
-- command line flags?
-- test on windows/ubuntu/clean osx
-- build/packaging/installers for windows/osx?
-- add licensing info
+  - store binary releases
+- auto-updating binary from deploy server
+- refresh data after song upload/processing
+- logging
+  - switch 
+  - if production push stdout 
+  - https://www.goinggo.net/2013/11/using-log-package-in-go.html
+- binary auto-update
 
-NICE TO HAVE:
+- when a new file shows up on the network look to see if node is on a VPS
+  - if it's NOT a VPS then issue a command "Upload to ____ Server" random VPS
+  - pay them 1 coin for the upload (equal to a download) and then when people download it
+  - if mustic isn't played or replicated after X time then remove it
+
+- Fuck it central server should just be postgres
+  - going to have to do a lot of manipulation/importing from musicbrainz/spotify/etc
+  - search can stil be replicated with riot eventually, use postgres fulltext to start
+  - use basic postgres replication for fallback
+  - put a cheap reverse proxy VPS in front of the core servers
+
+  - DONT WORRY ABOUT METADATA EDITING. Just scrape existing official sources imdb to spotify.
+
+  - offer a "COLLECTION" pubkey service thats very low featured but built-in
+
+  - "Join the Swarm?" after creating a new account
+    - We will connect with other nodes to discover and download media
+    - Encrypted swarm
+    - We WILL share your files
+    - [ ] I understand and will not upload or share files without permission. [ JOIN ]
+
+- All news should be announced through the software? Solid dashboard for updated.
+- Communicate once a week
+- Push desktop notifications "You were awarded 33 credits."
+- Award people early on with tokens for exactly what u need. 
+
+- Search/import plugins for (both music and playlists)
+  - spotify
+  - soundcloud
+  - google music/songza
+  - bandcamp
+  - youtube
+
+
+Absolute Focus On
+1. Making product work
+2. Economic incentive... have to motivate people to run servers
+    - initialize the coin ASAP
+3. Must be able to replicate
+4. Don't get overly obsessed about detailed features and cleaning up all meta data
+    - it's okay for coin and meta to be semi-centralized?
+    - just remove spam or flag it as "Download Only" and move on
+    - 
+
+
+NICE TO HAVES:
 - update/push into vue song array after upload.. generalized websocket?
 - fix upload hover el bug
 
@@ -34,22 +75,21 @@ NICE TO HAVE:
     - copy protobuf to local collection
     - add to download queue
     - server provides array of IP addresses that have that file? stun?
-  - use stun to facilitate transfers?
-
-  - every node should be registered as online/offline
-  - needs to have history of STUN success
 
   - have a separate badger DB for collections? or just a key-prefix?
 
-- deploy server meetava.com
-  - auto-update binary from URL
-  - STUN/(disable TURN if it gets too busy?)
-
+- Welcome/Signup page
+  - Replication should be built into product? not for alpha
+  - Inside app have an "Upgrade" reminder
+    - Costs $10 USD/mo
+    - Run your own server/accessible anywhere
+    - Auto-updated with new features
+    - Using this digitial ocean front company OR manual install w/ curl
 
 
 STRETCH GOALS:
   - Divide up content based on logged in user
-  - Setup central server getinka.com
+  - Setup central server getbonfire.com
   - Push all node file data to getinka.com/files grpc
     - Have server be notified when online? Hold open an https connection.
     - Have to have active https pipe to be considered online
@@ -61,34 +101,16 @@ STRETCH GOALS:
       - cross site so you can stream right from that node to your local browser
       - how about nodes that are behind firewalls?
 
+  - riot/bleeve
 
-Inka
-TreasureIsland
-
-
-DEPLOYMENT
-- what happens if you run ffmpeg parser on non-osx machine?
-- auto-updating binary
-  - distribution server / domain?
-- auto-download ffmpeg?
-- support for osx/win/linux... taskbar chrome? install process?
+  - auto-join most popular library (survey 8-10 nodes)
 
 
-DONT DO THIS BEFORE CHRISTMAS
-- riot/bleeve
-
-
-
-DO IT... SOMETIME
+VERY LOW PRIORITY
 - delayed import M3U to grab missing track lengths, artist, and album... position/track number?
 - Use the audio checksum feature of dhowden/tag to ignore ID3 tags...
-
-
-
 - on local installs be able to right-click a file and "Show in Finder/Explorer"
   - then use syscall to open the local file/folder ~/AVA/JohnDoe/
-
-
 
 
 https://github.com/kardianos/service
@@ -111,28 +133,14 @@ https://github.com/square/certstrap
 https://github.com/lextoumbourou/goodhosts
 https://github.com/jaytaylor/go-hostsfile
 
-- use a standard ~/AVA folder 
-  - but also index the standard itunes/music/etc folders from each OS in read only mode
-
+https://github.com/Sioro-Neoku/go-peerflix
 
 branding
 https://www.youtube.com/watch?v=HG8tqEUTlvs
 
-
-optimize for:
-SPEED
-  - cut yourself out.. u cant be bottleneck
-  - communicate vision clearly
-  - if 3 people agree to do something they have greenlight to act on it
-TRUST
-  - have a very simple voting/funding mechanism. go ahead and put some bitcoin bounties up
-  - give ppl keys to castle
-SCALABILITY
-  - 
 =======
 https://cdn0.iconfinder.com/data/icons/developer-line-2/512/sharpness-512.png
 https://www.iconfinder.com/icons/220712/clean_clear_diamond_diamonds_gem_hard_hardness_opacity_precious_pyramid_sharp_sharpness_transparent_icon
-
 
 inka
 ark
@@ -147,107 +155,43 @@ refuge
 haven
 ark
 hype
-alt.
+alt
 alter
 mod
 melody
 amplify
-<<<<<<< HEAD
 be.chancetherapper.com
 rise
 flavor
-underground.chancetherapper.com
 alpha
-ark
-=======
 magnify
-
-mixtape
-
 mixtape.im
 mixtape.is
 mixtape.la
 mixtape.to
-
-mx
-
-jacks.mixtape.is/chano
-
-
-getmixtape / for chano
-
-put the code under a github. don't have ANY commentary tied to code ownership
-
-make advertising site disconnected
-
-"Hey, I made a promotional website. Check it: http://mixtape"
-
 enjoy.chancetherapper.com
 into.chancetherapper.com
 bonfire.chancetherapper.com
-
-
 bonfire.is
-
 bonfire.club
+outjoy
+forpeace
+BONFIRE
+MIXTAPE
+BLAZE
 
-Preach.ChanceTheRapper.com
+/chano
+getmixtape / for chano
 
-
-
-- don't overthink the name
-- just make it easy to change by keeping name in one location
-  - github acct
-  - domain
-  - logo
-
-
-- auto-join most popular library (survey 8-10 nodes)
-
-
-EVERYTHING IS FEEDS
-- artists feed keypair
-- mix.society
-  - mix.meta
-
+principles
+- put the code under a github. don't have ANY commentary tied to code ownership
+- make advertising site disconnected
 
 GLOBAL SEARCH
 - use autocomplete for items in local library
 - global search on enter
 
 
-
-
-BONFIRE
-MIXTAPE
-BLAZE
-
-
-
-
 -------------------------------
-
-Running on darwin?
-
-- agent running
-  -> open a new browser window
-  -> exit
-- agent not running
-  -> start agent
-  -> open browser window
-
-
-- launch at login - ?
-- install icon on taskbar -- osascript? check to make sure not already installed
-  - instead of running same app and detecting what if you just point it toward a little standalone open(http://) app?
-- hide from taskbar w/ plist
-
-- fix reset db issues
-- get proper logging setup
-
-- what about support files aka ffmpeg?
-
-
-
 
 - If file is in "Applications" folder then run it as a service

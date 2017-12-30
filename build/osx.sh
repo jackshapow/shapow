@@ -10,7 +10,7 @@ cd dist
 #cp bindata_assetfs.go ../../api
 
 cd ../../api
-go build *go
+go build main.go routes.go assets_vfsdata.go
 
 cd ../build
 ./setup.sh Bonfire bonfire512.png

@@ -30,9 +30,9 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type Node struct {
-	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	MediaPath string `protobuf:"bytes,3,opt,name=media_path,json=mediaPath,proto3" json:"media_path,omitempty"`
+	Id       string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	RootPath string `protobuf:"bytes,3,opt,name=root_path,json=rootPath,proto3" json:"root_path,omitempty"`
 }
 
 func (m *Node) Reset()                    { *m = Node{} }
@@ -54,9 +54,9 @@ func (m *Node) GetName() string {
 	return ""
 }
 
-func (m *Node) GetMediaPath() string {
+func (m *Node) GetRootPath() string {
 	if m != nil {
-		return m.MediaPath
+		return m.RootPath
 	}
 	return ""
 }
@@ -91,15 +91,33 @@ func (m *Node) MarshalTo(dAtA []byte) (int, error) {
 		i = encodeVarintNode(dAtA, i, uint64(len(m.Name)))
 		i += copy(dAtA[i:], m.Name)
 	}
-	if len(m.MediaPath) > 0 {
+	if len(m.RootPath) > 0 {
 		dAtA[i] = 0x1a
 		i++
-		i = encodeVarintNode(dAtA, i, uint64(len(m.MediaPath)))
-		i += copy(dAtA[i:], m.MediaPath)
+		i = encodeVarintNode(dAtA, i, uint64(len(m.RootPath)))
+		i += copy(dAtA[i:], m.RootPath)
 	}
 	return i, nil
 }
 
+func encodeFixed64Node(dAtA []byte, offset int, v uint64) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
+	dAtA[offset+4] = uint8(v >> 32)
+	dAtA[offset+5] = uint8(v >> 40)
+	dAtA[offset+6] = uint8(v >> 48)
+	dAtA[offset+7] = uint8(v >> 56)
+	return offset + 8
+}
+func encodeFixed32Node(dAtA []byte, offset int, v uint32) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
+	return offset + 4
+}
 func encodeVarintNode(dAtA []byte, offset int, v uint64) int {
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
@@ -120,7 +138,7 @@ func (m *Node) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovNode(uint64(l))
 	}
-	l = len(m.MediaPath)
+	l = len(m.RootPath)
 	if l > 0 {
 		n += 1 + l + sovNode(uint64(l))
 	}
@@ -229,7 +247,7 @@ func (m *Node) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MediaPath", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RootPath", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -254,7 +272,7 @@ func (m *Node) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.MediaPath = string(dAtA[iNdEx:postIndex])
+			m.RootPath = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -385,14 +403,14 @@ var (
 func init() { proto.RegisterFile("node.proto", fileDescriptorNode) }
 
 var fileDescriptorNode = []byte{
-	// 130 bytes of a gzipped FileDescriptorProto
+	// 129 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xca, 0xcb, 0x4f, 0x49,
-	0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0xcd, 0xcd, 0x4f, 0x49, 0xcd, 0x51, 0xf2, 0xe4,
+	0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0xcd, 0xcd, 0x4f, 0x49, 0xcd, 0x51, 0x72, 0xe7,
 	0x62, 0xf1, 0xcb, 0x4f, 0x49, 0x15, 0xe2, 0xe3, 0x62, 0xca, 0x4c, 0x91, 0x60, 0x54, 0x60, 0xd4,
 	0xe0, 0x0c, 0x62, 0xca, 0x4c, 0x11, 0x12, 0xe2, 0x62, 0xc9, 0x4b, 0xcc, 0x4d, 0x95, 0x60, 0x02,
-	0x8b, 0x80, 0xd9, 0x42, 0xb2, 0x5c, 0x5c, 0xb9, 0xa9, 0x29, 0x99, 0x89, 0xf1, 0x05, 0x89, 0x25,
-	0x19, 0x12, 0xcc, 0x60, 0x19, 0x4e, 0xb0, 0x48, 0x40, 0x62, 0x49, 0x86, 0x93, 0xc0, 0x89, 0x47,
-	0x72, 0x8c, 0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe3, 0xb1, 0x1c, 0x43, 0x12,
-	0x1b, 0xd8, 0x2a, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x95, 0x41, 0xe9, 0x1b, 0x78, 0x00,
-	0x00, 0x00,
+	0x8b, 0x80, 0xd9, 0x42, 0xd2, 0x5c, 0x9c, 0x45, 0xf9, 0xf9, 0x25, 0xf1, 0x05, 0x89, 0x25, 0x19,
+	0x12, 0xcc, 0x60, 0x09, 0x0e, 0x90, 0x40, 0x40, 0x62, 0x49, 0x86, 0x93, 0xc0, 0x89, 0x47, 0x72,
+	0x8c, 0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe3, 0xb1, 0x1c, 0x43, 0x12, 0x1b,
+	0xd8, 0x22, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0xe7, 0xdc, 0xdd, 0x66, 0x76, 0x00, 0x00,
+	0x00,
 }

@@ -39,9 +39,11 @@
         <li>
           <a :class="['uploads', currentView == 'uploads' ? 'active' : '']" href="/#!/uploads">Uploads</a>
         </li>
+        <!--
         <li>
           <a :class="['settings', currentView == 'settings' ? 'active' : '']" href="/#!/settings">Settings</a>
         </li>
+        -->
         <li>
           <a :class="['users', currentView == 'users' ? 'active' : '']" href="/#!/users">Users</a>
         </li>

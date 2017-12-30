@@ -8,10 +8,10 @@ import (
 	// "github.com/dgrijalva/jwt-go"
 	// "github.com/gocraft/dbr"
 	"github.com/dgraph-io/badger"
-	"github.com/golang/protobuf/proto"
+	// "github.com/golang/protobuf/proto"
 	"github.com/jackshapow/shapow/api/model"
 	// "time"
-	"encoding/binary"
+	// "encoding/binary"
 	"github.com/getlantern/systray"
 	"github.com/getlantern/systray/example/icon"
 	"github.com/mitchellh/go-homedir"
@@ -23,7 +23,7 @@ import (
 	// "github.com/shurcooL/vfsgen"
 	// "net/http"
 	"runtime"
-	"strconv"
+	// "strconv"
 )
 
 func init() {
@@ -33,31 +33,30 @@ var (
 	NodeSettings model.Node
 	AppName      = "Bonfire"
 	DataRoot     = kingpin.Flag("data", "User data directory").ExistingDir()
+	//logger *log.Logger
 )
 
 func bootstrap() {
-	// var fs http.FileSystem = http.Dir("../front/dist")
-
-	// err := vfsgen.Generate(fs, vfsgen.Options{})
-	// if err != nil {
-	// 	fmt.Println("Error generating", err)
-	// }
-
-	kingpin.Parse()
-
 	fmt.Println("Starting", AppName, "on", runtime.GOOS, "...")
 
+	// Parse command line flags
+	kingpin.Parse()
+
+	// Set file folders
 	if *DataRoot != "" {
 		// Use existing data directory
-		*DataRoot, _ = filepath.Abs(*DataRoot)
+		// *DataRoot, _ = filepath.Abs(*DataRoot)
+		NodeSettings.RootPath, _ = filepath.Abs(*DataRoot)
 	} else {
 		// Set default data directory
 		root, _ := homedir.Dir()
-		*DataRoot = filepath.Join(root, AppName)
-		os.MkdirAll(*DataRoot, os.ModePerm)
+		// *DataRoot = filepath.Join(root, AppName)
+		NodeSettings.RootPath = filepath.Join(root, AppName)
+		os.MkdirAll(NodeSettings.RootPath, os.ModePerm)
+		os.MkdirAll(NodeSettings.MediaPath(), os.ModePerm)
 	}
 
-	fmt.Println("Data directory", *DataRoot)
+	fmt.Println("Data directory", NodeSettings.RootPath)
 }
 
 func main() {
@@ -68,7 +67,6 @@ func main() {
 		fmt.Println(AppName, "quit.")
 	}
 
-	fmt.Println("Opening...")
 	systray.Run(onReady, onExit)
 }
 
@@ -97,50 +95,48 @@ func onReady() {
 		}
 	}()
 
+	// Initialize media store
+	//var node_settings = new(model.Node)
+	//var node_settings = model.InitializeNode()
+
+	// err = db.Update(func(txn *badger.Txn) error {
+	// 	item, err := txn.Get([]byte("node:settings"))
+	// 	if err != nil {
+	// 		// Initial new settings
+	// 		node_settings.MediaPath = "media"
+	// 		nodeProto, _ := proto.Marshal(node_settings)
+	// 		err := txn.Set([]byte("node:settings"), nodeProto)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	} else {
+	// 		data, err := item.Value()
+	// 		err = proto.Unmarshal(data, node_settings)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+
+	// 	return nil
+	// })
+
+	// if err != nil {
+	// 	fmt.Println("ERROR LOADING NODE", err)
+	// }
+
 	// Initialize badger
 	opt := badger.DefaultOptions
-	opt.Dir = filepath.Join(*DataRoot, "database")
-	opt.ValueDir = filepath.Join(*DataRoot, "database")
+	opt.Dir = filepath.Join(NodeSettings.RootPath, "Database")
+	opt.ValueDir = filepath.Join(NodeSettings.RootPath, "Database")
 	db, err := badger.Open(opt)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// Initialize media store
-	var node_settings = new(model.Node)
-	err = db.Update(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte("node:settings"))
-		if err != nil {
-			// Initial new settings
-			node_settings.MediaPath = "media"
-			nodeProto, _ := proto.Marshal(node_settings)
-			err := txn.Set([]byte("node:settings"), nodeProto)
-			if err != nil {
-				return err
-			}
-		} else {
-			data, err := item.Value()
-			err = proto.Unmarshal(data, node_settings)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("ERROR LOADING NODE", err)
-	}
-
-	fmt.Println("GIDDYUP", node_settings)
-	newpath := filepath.Join(".", node_settings.MediaPath)
-	os.MkdirAll(newpath, os.ModePerm)
-
 	// Reset DB?
 	// disabled because its crashing app
-	// model.ResetDB(*db)
+	model.ResetDB(*db, &NodeSettings)
 
 	e := echo.New()
 	//	e.Use(middleware.Logger())
@@ -153,11 +149,11 @@ func onReady() {
 
 	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
 		//fmt.Println(string(reqBody))
-		if binary.Size(reqBody) > 1000 {
-			fmt.Println("Body request is", strconv.Itoa(binary.Size(reqBody)), "bytes")
-		} else {
-			fmt.Println("Request Body:", string(reqBody))
-		}
+		// if binary.Size(reqBody) > 1000 {
+		// 	fmt.Println("Body request is", strconv.Itoa(binary.Size(reqBody)), "bytes")
+		// } else {
+		// 	fmt.Println("Request Body:", string(reqBody))
+		// }
 	}))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -167,9 +163,10 @@ func onReady() {
 
 	//e.Use(middleware.Recover())
 
-	RegisterRoutes(e, db, node_settings)
+	RegisterRoutes(e, db, &NodeSettings)
 
-	open.Run("http://localhost:31337")
+	// find a way to disable this in dev mode
+	//open.Run("http://localhost:31337")
 
 	e.Logger.Fatal(e.Start(":31337"))
 

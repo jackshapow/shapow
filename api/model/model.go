@@ -13,7 +13,7 @@ func init() {
 
 }
 
-func ResetDB(db badger.DB) error {
+func ResetDB(db badger.DB, node_settings *Node) error {
 	fmt.Println("Resetting database...")
 
 	db.Update(func(txn *badger.Txn) error {
@@ -24,7 +24,6 @@ func ResetDB(db badger.DB) error {
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := item.Key()
-			fmt.Println("DELETE F ", k)
 			txn.Delete(k)
 
 		}
@@ -34,7 +33,6 @@ func ResetDB(db badger.DB) error {
 		for nit.Seek(prefix); nit.ValidForPrefix(prefix); nit.Next() {
 			item := nit.Item()
 			k := item.Key()
-			fmt.Println("DELETE P ", k)
 			txn.Delete(k)
 
 		}
@@ -44,7 +42,6 @@ func ResetDB(db badger.DB) error {
 		for zit.Seek(prefix); zit.ValidForPrefix(prefix); zit.Next() {
 			item := zit.Item()
 			k := item.Key()
-			fmt.Println("DELETE P ", k)
 			txn.Delete(k)
 		}
 
@@ -53,7 +50,6 @@ func ResetDB(db badger.DB) error {
 		for uit.Seek(prefix); uit.ValidForPrefix(prefix); uit.Next() {
 			item := uit.Item()
 			k := item.Key()
-			fmt.Println("DELETE U ", k)
 			txn.Delete(k)
 		}
 
@@ -62,7 +58,6 @@ func ResetDB(db badger.DB) error {
 		for zuit.Seek(prefix); zuit.ValidForPrefix(prefix); zuit.Next() {
 			item := zuit.Item()
 			k := item.Key()
-			fmt.Println("DELETE UE ", k)
 			txn.Delete(k)
 		}
 
@@ -80,7 +75,7 @@ func ResetDB(db badger.DB) error {
 	// }
 
 	// Load existing media
-	RescanFolder(db)
+	RescanFolder(db, node_settings)
 
 	return nil
 }
