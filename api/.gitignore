@@ -18,3 +18,4 @@ database/badger/
 data/
 
 *.log
+gin-bin
