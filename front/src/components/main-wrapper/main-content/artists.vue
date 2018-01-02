@@ -6,7 +6,7 @@
     </h1>
 
     <div class="artists main-scroll-wrap" :class="`as-${viewMode}`" @scroll="scrolling">
-      <artist-item v-for="item in displayedItems" :artist="item"/>
+      <artist-item v-for="item in displayedItems" :key="item.id" :artist="item"/>
       <span class="item filler" v-for="n in 6"/>
       <to-top-button/>
     </div>

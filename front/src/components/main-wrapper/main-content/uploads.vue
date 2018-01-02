@@ -22,6 +22,7 @@
       </span>
 
       <div class="buttons">
+        <!--<button v-on:click="sendSocket">Send Notification</button>-->
 
         <file-upload
           class="btn btn-green btn-add"
@@ -118,6 +119,9 @@ export default {
   },
 
   methods: {
+    // sendSocket () {
+    //   this.$socket.sendObj({awesome: 'data'})
+    // },
 
     updateTransferStatus () {
       // Grab latest data from files array
@@ -175,13 +179,18 @@ export default {
         }
       })      
     },
-    // Automatic file upload
     inputFile(newFile, oldFile) {
+      // Automatic file upload
       if (Boolean(newFile) !== Boolean(oldFile) || oldFile.error !== newFile.error) {
         if (!this.$refs.upload.active) {
           this.$refs.upload.active = true
         }
       }
+      // Process successful upload
+      if (newFile && oldFile && newFile.success && !oldFile.success) {
+        // newFile.response
+      }
+
     }
   }
 }

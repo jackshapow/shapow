@@ -35,13 +35,16 @@ func (h *Handler) Websocket(c echo.Context) error {
 		//err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
 		if err = ws.WriteJSON(map[string]int{"Message": 12345}); err != nil {
 			fmt.Println(err)
+			break
 		}
 
 		// Read
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
 			c.Logger().Error(err)
+			break
 		}
 		fmt.Printf("%s\n", msg)
 	}
+	return nil
 }

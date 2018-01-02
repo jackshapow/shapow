@@ -15,6 +15,7 @@
             <li v-for="song in top.songs"
               :top-play-count="top.songs.length ? top.songs[0].playCount : 0"
               :song="song"
+              :key="song.id"
               is="song-item"/>
           </ol>
         </section>
@@ -41,12 +42,12 @@
 
         <div class="two-cols">
           <div class="wrapper as-list">
-            <album-item v-for="album in recentlyAdded.albums" :album="album"/>
+            <album-item v-for="album in recentlyAdded.albums" :key="album.id" :album="album"/>
             <span class="item filler" v-for="n in 3"/>
           </div>
           <div>
             <ul class="recently-added-song-list" v-show="recentlyAdded.songs.length">
-              <li v-for="song in recentlyAdded.songs" :song="song" is="song-item"/>
+              <li v-for="song in recentlyAdded.songs" :song="song" :key="song.id" is="song-item"/>
             </ul>
           </div>
         </div>
@@ -56,7 +57,7 @@
         <h1>Top Artists</h1>
 
         <div class="wrapper" :class="`as-${preferences.artistsViewMode}`">
-          <artist-item v-for="artist in top.artists" :artist="artist"/>
+          <artist-item v-for="artist in top.artists" :key="artist.id" :artist="artist"/>
           <span class="item filler" v-for="n in 3"/>
         </div>
       </section>
@@ -65,7 +66,7 @@
         <h1>Top Albums</h1>
 
         <div class="wrapper">
-          <album-item v-for="album in top.albums" :album="album"/>
+          <album-item v-for="album in top.albums" :key="album.id" :album="album"/>
           <span class="item filler" v-for="n in 3"/>
         </div>
       </section>

@@ -45,7 +45,6 @@
       :items="filteredItems"
       item-height="35"
       :renderers="renderers"
-      key-field="song"
     />
 
     <song-menu ref="contextMenu" :songs="selectedSongs"/>

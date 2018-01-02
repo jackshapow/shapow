@@ -3,6 +3,10 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex);
 
+//
+// This file is just a placeholder for future vuex implementation.
+//
+
     //https://github.com/nathantsoi/vue-native-websocket
     //     <button v-on:click="sendSocket">Send Notification</button>
 

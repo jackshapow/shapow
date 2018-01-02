@@ -39,8 +39,9 @@ import { playback, ls } from './services'
 import { focusDirective, clickawayDirective } from './directives'
 import router from './router'
 
-import VueNativeSock from 'vue-native-websocket'
-Vue.use(VueNativeSock, 'ws://localhost:31337/ws', { store: store, format: 'json', reconnection: true, reconnectionAttempts: 5, reconnectionDelay: 3000})
+// For the future...
+//import VueNativeSock from 'vue-native-websocket'
+//Vue.use(VueNativeSock, 'ws://localhost:31337/ws', { store: store, format: 'json', reconnection: true, reconnectionAttempts: 5, reconnectionDelay: 3000})
 
 export default {
   components: { siteHeader, siteFooter, mainWrapper, overlay, loginForm, editSongsForm },
@@ -180,11 +181,6 @@ export default {
       }
     }
 
-    // sendSocket () {
-    //   this.$socket.emit('testmessage', 'demo');
-    //   alert("test sendsocket")
-    //   //this.$set('message', null);      
-    // }    
   },
 
   // sockets: {

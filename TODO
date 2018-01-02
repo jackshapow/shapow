@@ -1,12 +1,4 @@
-1 DAY
-
 PRIMARY:
-- refresh data after song upload/processing
-  - do out of band with a websocket
-  - dont block for large upload/processing times
-  - push new songs, playlists, albums individually on create?
-    - update the uploads page?
-
 - set logo / name
 - auto-updating binary from deploy server
 - build pipeline
@@ -14,6 +6,11 @@ PRIMARY:
   - store binary releases?
 
 WAIT:
+- refresh data after song upload/processing
+  - do out of band with a websocket
+  - dont block for large upload/processing times
+  - push new songs, playlists, albums individually on create?
+    - update the uploads page?
 - cleanup/fix routes / jwt issues
 - new user from users page submits new token and logs ppl out?
 - add osx icon w/ osagen. launch browser if already running. (can be added later)
@@ -198,3 +195,8 @@ GLOBAL SEARCH
 -------------------------------
 
 - If file is in "Applications" folder then run it as a service
+
+
+
+
+https://github.com/desertbit/glue
