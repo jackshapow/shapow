@@ -8,9 +8,9 @@ import "file.proto";
 package model;
 
 enum PlaylistType {
-  Artist = 0;
-  Album = 1;
-  User = 2;
+  ArtistType = 0;
+  AlbumType = 1;
+  UserType = 2;
 };
 
 message Playlist {

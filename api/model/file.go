@@ -224,7 +224,7 @@ func (file *File) SetAlbumArtist(db badger.DB) bool {
 		io.Copy(ah, strings.NewReader(artist_hash_name))
 		file.ArtistId = strconv.FormatUint(ah.Sum64(), 10)
 
-		artist := Playlist{Id: file.ArtistId, Name: artist_hash_name, Type: PlaylistType_Artist}
+		artist := Playlist{Id: file.ArtistId, Name: artist_hash_name, Type: PlaylistType_ArtistType}
 		artist.Create(db)
 		fmt.Println("     CREATE PLAYLIST: ", artist)
 
@@ -242,7 +242,7 @@ func (file *File) SetAlbumArtist(db badger.DB) bool {
 		io.Copy(aah, strings.NewReader(album_hash_name))
 		file.AlbumId = strconv.FormatUint(aah.Sum64(), 10)
 
-		album := Playlist{Id: file.AlbumId, Name: album_name, ParentId: artist.Id, Type: PlaylistType_Album, ImageId: file.Meta["image_id"], Cover: file.Meta["cover"]}
+		album := Playlist{Id: file.AlbumId, Name: album_name, ParentId: artist.Id, Type: PlaylistType_AlbumType, ImageId: file.Meta["image_id"], Cover: file.Meta["cover"]}
 		err := album.Create(db)
 		if err != nil {
 			fmt.Println("     COULD NOT CREATE PLAYLIST: ", album_name)
@@ -338,13 +338,15 @@ func (file *File) ParseID3(db badger.DB, node_settings *Node) error {
 	return nil
 }
 
-func (file *File) SetDuration() error {
+func (file *File) SetDuration(ffmpeg_path string) error {
 	var (
 		//cmdOut []byte
 		err error
 	)
-	cmdName := "./binaries/osx/ffmpeg"
+	cmdName := ffmpeg_path               //"./binaries/osx/ffmpeg"
 	cmdArgs := []string{"-i", file.Path} // Windows should be 2>NUL
+
+	//	panic(ffmpeg_path)
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 	output, err := cmd.CombinedOutput()
@@ -456,8 +458,8 @@ func (file *File) Import(db badger.DB, node_settings *Node) error {
 	file.ParseID3(db, node_settings)
 	file.SetName()
 	file.SetAlbumArtist(db)
-	if strings.Contains(file.Path, ".mp3") {
-		file.SetDuration()
+	if strings.Contains(file.Path, ".mp3") && node_settings.FfmpegPath != "" {
+		file.SetDuration(node_settings.FfmpegPath)
 	}
 
 	fmt.Println("      ArtistID", file.ArtistId)

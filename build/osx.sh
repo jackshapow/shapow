@@ -1,17 +1,18 @@
 #!/bin/bash
 
-#Bonfire OS
-
-# Mac OSX .app builder
+echo "Build Front End Assets..."
 cd ../front
 npm run build
 cd dist
-#go-bindata-assetfs ./...
-#cp bindata_assetfs.go ../../api
 
+echo "Compile binary..."
 cd ../../api
-go build main.go routes.go assets_vfsdata.go
+go build
 
+echo "Build OSX app bundle..."
 cd ../build
 ./setup.sh Bonfire bonfire512.png
 
+echo "Copy binaries..."
+cp ../api/api "Bonfire.app/Contents/MacOS/Bonfire"
+cp ../api/binaries/darwin/ffmpeg "Bonfire.app/Contents/MacOS/ffmpeg"

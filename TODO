@@ -1,23 +1,26 @@
 1 DAY
 
 PRIMARY:
-- set manual flag/url for resetting database
-- fix binaries ffmpeg for osx/linux ... also dev mode
-- add osx icon w/ osagen
-  - if not dev mode launch browser on start
-- new user from users page submits new token and logs ppl out?
+- refresh data after song upload/processing
+  - do out of band with a websocket
+  - dont block for large upload/processing times
+  - push new songs, playlists, albums individually on create?
+    - update the uploads page?
+
 - set logo / name
-- fix routes / jwt issues
+- auto-updating binary from deploy server
 - build pipeline
   - tag releases on git
-  - store binary releases
-- auto-updating binary from deploy server
-- refresh data after song upload/processing
+  - store binary releases?
+
+WAIT:
+- cleanup/fix routes / jwt issues
+- new user from users page submits new token and logs ppl out?
+- add osx icon w/ osagen. launch browser if already running. (can be added later)
 - logging
   - switch 
   - if production push stdout 
   - https://www.goinggo.net/2013/11/using-log-package-in-go.html
-- binary auto-update
 
 - when a new file shows up on the network look to see if node is on a VPS
   - if it's NOT a VPS then issue a command "Upload to ____ Server" random VPS

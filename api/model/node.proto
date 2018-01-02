@@ -14,6 +14,8 @@ message Node {
    string id = 1;
    string name = 2;
    string root_path = 3;
+   string ffmpeg_path = 4;
+   string port = 5;
    // string email = 3;
    // string password = 4;
    // bytes pub_key = 5;

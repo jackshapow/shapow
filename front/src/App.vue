@@ -34,9 +34,13 @@ import editSongsForm from './components/modals/edit-songs-form.vue'
 
 import { event, showOverlay, hideOverlay, forceReloadWindow, $ } from './utils'
 import { sharedStore, userStore, preferenceStore as preferences } from './stores'
+import store from './store'
 import { playback, ls } from './services'
 import { focusDirective, clickawayDirective } from './directives'
 import router from './router'
+
+import VueNativeSock from 'vue-native-websocket'
+Vue.use(VueNativeSock, 'ws://localhost:31337/ws', { store: store, format: 'json', reconnection: true, reconnectionAttempts: 5, reconnectionDelay: 3000})
 
 export default {
   components: { siteHeader, siteFooter, mainWrapper, overlay, loginForm, editSongsForm },
@@ -92,7 +96,7 @@ export default {
 
           // Notice that a custom message like this has ceased to be supported
           // starting from Chrome 51.
-          return 'You asked Koel to confirm before closing, so here it is.'
+          return 'You asked to confirm before closing, so here it is.'
         }
 
         // Let all other components know we're ready.
@@ -175,7 +179,20 @@ export default {
         })
       }
     }
+
+    // sendSocket () {
+    //   this.$socket.emit('testmessage', 'demo');
+    //   alert("test sendsocket")
+    //   //this.$set('message', null);      
+    // }    
   },
+
+  // sockets: {
+  //   addsong: function (song) {
+  //     //this.users.push(user);
+  //     alert("add a song!")
+  //   }
+  // },
 
   created () {
     event.on({

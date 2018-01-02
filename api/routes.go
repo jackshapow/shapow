@@ -49,6 +49,9 @@ func RegisterRoutes(e *echo.Echo, db *badger.DB, node_settings *model.Node) {
 	e.GET("/api/songs/:id/info", h.SongInfo)
 	e.GET("/api/songs/:id/play", h.SongPlay)
 	e.POST("/api/songs", h.SongUpload)
+	e.GET("/reset", h.HomeReset)
+	e.DELETE("/api/me", h.UserLogout)
+	e.GET("/ws", h.Websocket)
 
 	// Require authentication
 	r := e.Group("/api")
@@ -56,7 +59,6 @@ func RegisterRoutes(e *echo.Echo, db *badger.DB, node_settings *model.Node) {
 	r.PUT("/me", h.UserUpdate)
 	r.GET("/data", h.UserData)
 	r.PUT("/user/:id", h.UserUpdate)
-	r.DELETE("/me", h.UserLogout)
 	r.GET("/datatest", h.UserDataTest)
 	r.POST("/interaction/:kind", h.SongInteraction)
 	r.POST("/playlist", h.PlaylistCreate)

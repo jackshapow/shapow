@@ -6,11 +6,15 @@
 
 	It is generated from these files:
 		file.proto
+		node.proto
 		playlist.proto
+		user.proto
 
 	It has these top-level messages:
 		File
+		Node
 		Playlist
+		User
 */
 package model
 

@@ -33,14 +33,24 @@ var (
 	NodeSettings model.Node
 	AppName      = "Bonfire"
 	DataRoot     = kingpin.Flag("data", "User data directory").ExistingDir()
+	ResetDB      = kingpin.Flag("reset", "Reset accounts and settings").Bool()
+	Port         = kingpin.Flag("port", "Port to run webserver").String()
 	//logger *log.Logger
 )
 
 func bootstrap() {
-	fmt.Println("Starting", AppName, "on", runtime.GOOS, "...")
+	fmt.Println("Initializing", AppName, "on", runtime.GOOS, "...")
 
 	// Parse command line flags
 	kingpin.Parse()
+
+	if *Port == "" {
+		if runtime.GOOS == "linux" {
+			NodeSettings.Port = "80"
+		} else {
+			NodeSettings.Port = "31337"
+		}
+	}
 
 	// Set file folders
 	if *DataRoot != "" {
@@ -57,6 +67,27 @@ func bootstrap() {
 	}
 
 	fmt.Println("Data directory", NodeSettings.RootPath)
+
+	// Set executable path
+	ex, _ := os.Executable()
+	exPath := filepath.Dir(ex)
+	fmt.Println("Executing from", exPath)
+
+	// Set FFMPEG location
+	ffmpeg_path := filepath.Join(exPath, "binaries", runtime.GOOS, "ffmpeg")
+
+	if _, err := os.Stat(ffmpeg_path); err == nil {
+		fmt.Println("FFMPEG found ", ffmpeg_path)
+		NodeSettings.FfmpegPath = ffmpeg_path
+	}
+
+	ffmpeg_path = filepath.Join(exPath, "ffmpeg")
+
+	if _, err := os.Stat(ffmpeg_path); err == nil {
+		fmt.Println("FFMPEG found ", ffmpeg_path)
+		NodeSettings.FfmpegPath = ffmpeg_path
+	}
+
 }
 
 func main() {
@@ -132,14 +163,17 @@ func onReady() {
 
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println("Cannot open database, already in use. Exiting.")
+		os.Exit(1)
 	}
 
 	// Reset DB?
-	// disabled because its crashing app
-	model.ResetDB(*db, &NodeSettings)
+	if *ResetDB == true {
+		model.ResetDB(*db, &NodeSettings)
+	}
 
 	e := echo.New()
-	//	e.Use(middleware.Logger())
+	//e.Use(middleware.Logger())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `{"time":"${time_rfc3339_nano}","id":"${id}","remote_ip":"${remote_ip}","host":"${host}",` +
 			`"method":"${method}","uri":"${uri}","status":${status}, "latency":${latency},` +
@@ -157,17 +191,23 @@ func onReady() {
 	}))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost", "http://localhost:3000", "http://localhost:8080", "http://localhost:3001", "http://localhost:31337", "http://koel.app", "http://mixtape:31337", "http://mixtape"},
-		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+		AllowOrigins:     []string{"http://localhost", "http://localhost:3000", "http://localhost:8080", "http://localhost:3001", "http://localhost:31337", "http://koel.app", "http://mixtape:31337", "http://mixtape"},
+		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+		AllowCredentials: true,
 	}))
 
 	//e.Use(middleware.Recover())
 
 	RegisterRoutes(e, db, &NodeSettings)
 
-	// find a way to disable this in dev mode
-	//open.Run("http://localhost:31337")
+	if DevMode == false && runtime.GOOS != "linux" {
+		open.Run("http://localhost:" + NodeSettings.Port)
+	}
 
-	e.Logger.Fatal(e.Start(":31337"))
+	e.HideBanner = true
+
+	fmt.Println("Starting server http://localhost:" + NodeSettings.Port)
+
+	e.Logger.Fatal(e.Start(":" + NodeSettings.Port))
 
 }

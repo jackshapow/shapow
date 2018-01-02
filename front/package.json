@@ -25,10 +25,14 @@
     "sass-loader": "^6.0.6",
     "select": "^1.0.6",
     "slugify": "^1.0.2",
+    "socket.io-client": "^2.0.4",
     "vue": "^2.3.3",
+    "vue-native-websocket": "^2.0.5",
+    "vue-socket.io": "^2.1.1-a",
     "vue-upload-component": "^2.7.2",
     "vue-virtual-scroller": "^0.5.0",
     "vuequery": "^1.0.0",
+    "vuex": "^3.0.1",
     "youtube-player": "^3.0.4"
   },
   "devDependencies": {

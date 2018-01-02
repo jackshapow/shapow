@@ -62,7 +62,7 @@ func (h *Handler) PlaylistSync(c echo.Context) error {
 }
 
 func (h *Handler) PlaylistCreate(c echo.Context) error {
-	p := model.Playlist{Type: model.PlaylistType_User} //new(model.Playlist)
+	p := model.Playlist{Type: model.PlaylistType_UserType} //new(model.Playlist)
 
 	if err := c.Bind(&p); err != nil {
 		return echo.NewHTTPError(http.StatusConflict, "Sorry couldn't create playlist.")

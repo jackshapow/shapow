@@ -167,21 +167,21 @@ func stubData(h *Handler, user model.User) string {
 	songArray, _ := json.Marshal(all_files)
 
 	// Albums
-	all_albums, err := model.AllPlaylists(*h.DB, model.PlaylistType_Album)
+	all_albums, err := model.AllPlaylists(*h.DB, model.PlaylistType_AlbumType)
 	if err != nil {
 		fmt.Println("Error fetching all albums")
 	}
 	albumArray, _ := json.Marshal(all_albums)
 
 	// Artists
-	all_artists, err := model.AllPlaylists(*h.DB, model.PlaylistType_Artist)
+	all_artists, err := model.AllPlaylists(*h.DB, model.PlaylistType_ArtistType)
 	if err != nil {
 		fmt.Println("Error fetching all artists")
 	}
 	artistArray, _ := json.Marshal(all_artists)
 
 	// Playlists
-	all_playlists, err := model.AllPlaylists(*h.DB, model.PlaylistType_User)
+	all_playlists, err := model.AllPlaylists(*h.DB, model.PlaylistType_UserType)
 	if err != nil {
 		fmt.Println("Error fetching all playlists")
 	}
